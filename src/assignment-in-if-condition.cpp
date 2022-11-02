@@ -1,4 +1,5 @@
 // RUN: %check_clang_tidy %s bugprone-assignment-in-if-condition %t
+#include <iterator>
 
 void f(int arg) {
   int f = 3;
