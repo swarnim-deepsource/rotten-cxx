@@ -40,44 +40,44 @@ using TypedeffedIterator = FloatIterator;
 
 int accumulatePositive1() {
   float a[1] = {0.5f};
+  // [CXX-W2005]: 10 "Possible loss of precision due the type-folding from `float` to `int`"
   return std::accumulate(a, a + 1, 0);
-  // CHECK-MESSAGES: [[@LINE-1]]:10: warning: folding type 'float' into type 'int'
 }
 
 int accumulatePositive2() {
   FloatIterator it;
+  // [CXX-W2005]: 10 "Possible loss of precision due the type-folding from `float` to `int`"
   return std::accumulate(it, it, 0);
-  // CHECK-MESSAGES: [[@LINE-1]]:10: warning: folding type 'float' into type 'int'
 }
 
 int accumulatePositive3() {
   double a[1] = {0.0};
+  // [CXX-W2005]: 10 "Possible loss of precision due the type-folding from `double` to `float`"
   return std::accumulate(a, a + 1, 0.0f);
-  // CHECK-MESSAGES: [[@LINE-1]]:10: warning: folding type 'double' into type 'float'
 }
 
 int accumulatePositive4() {
   TypedefTemplateIterator<unsigned> it;
+  // [CXX-W2005]: 10 "Possible loss of precision due the type-folding from `unsigned int` to `int`"
   return std::accumulate(it, it, 0);
-  // CHECK-MESSAGES: [[@LINE-1]]:10: warning: folding type 'unsigned int' into type 'int'
 }
 
 int accumulatePositive5() {
   UsingTemplateIterator<unsigned> it;
+  // [CXX-W2005]: 10 "Possible loss of precision due the type-folding from `unsigned int` to `int`"
   return std::accumulate(it, it, 0);
-  // CHECK-MESSAGES: [[@LINE-1]]:10: warning: folding type 'unsigned int' into type 'int'
 }
 
 int accumulatePositive6() {
   DependentTypedefTemplateIterator<UsingTemplateIterator<unsigned>> it;
+  // [CXX-W2005]: 10 "Possible loss of precision due the type-folding from `unsigned int` to `int`"
   return std::accumulate(it, it, 0);
-  // CHECK-MESSAGES: [[@LINE-1]]:10: warning: folding type 'unsigned int' into type 'int'
 }
 
 int accumulatePositive7() {
   TypedeffedIterator it;
+  // [CXX-W2005]: 10 "Possible loss of precision due the type-folding from `float` to `int`"
   return std::accumulate(it, it, 0);
-  // CHECK-MESSAGES: [[@LINE-1]]:10: warning: folding type 'float' into type 'int'
 }
 
 int accumulatePositive8() {
@@ -88,28 +88,28 @@ int accumulatePositive8() {
 
 int reducePositive1() {
   float a[1] = {0.5f};
+  // [CXX-W2005]: 10 "Possible loss of precision due the type-folding from `float` to `int`"
   return std::reduce(a, a + 1, 0);
-  // CHECK-MESSAGES: [[@LINE-1]]:10: warning: folding type 'float' into type 'int'
 }
 
 int reducePositive2() {
   float a[1] = {0.5f};
+  // [CXX-W2005]: 10 "Possible loss of precision due the type-folding from `float` to `int`"
   return std::reduce(std::par, a, a + 1, 0);
-  // CHECK-MESSAGES: [[@LINE-1]]:10: warning: folding type 'float' into type 'int'
 }
 
 int innerProductPositive1() {
   float a[1] = {0.5f};
   int b[1] = {1};
+  // [CXX-W2005]: 10 "Possible loss of precision due the type-folding from `float` to `int`"
   return std::inner_product(std::par, a, a + 1, b, 0);
-  // CHECK-MESSAGES: [[@LINE-1]]:10: warning: folding type 'float' into type 'int'
 }
 
 int innerProductPositive2() {
   float a[1] = {0.5f};
   int b[1] = {1};
+  // [CXX-W2005]: 10 "Possible loss of precision due the type-folding from `float` to `int`"
   return std::inner_product(std::par, a, a + 1, b, 0);
-  // CHECK-MESSAGES: [[@LINE-1]]:10: warning: folding type 'float' into type 'int'
 }
 
 // Negatives.

@@ -14,14 +14,12 @@ void t(T b) {
 
 void foo() {
   bool *b = SomeFunction();
+  // [CXX-W2002]: 7 "Dubious check of `bool *b` against `nullptr`"
   if (b) {
-// CHECK-MESSAGES: :[[@LINE-1]]:7: warning: dubious check of 'bool *' against 'nullptr'
-// CHECK-FIXES: if (*b) {
   }
 
+  // [CXX-W2002]: 14 "Dubious check of `bool *b` against `nullptr`"
   if (F() && b) {
-// CHECK-MESSAGES: :[[@LINE-1]]:14: warning: dubious check of 'bool *' against 'nullptr'
-// CHECK-FIXES: if (F() && *b) {
   }
 
   // TODO: warn here.
@@ -74,9 +72,8 @@ void foo() {
     bool *b;
   } d = { SomeFunction() };
 
+  // [CXX-W2002]: 7 "Dubious check of `bool *d.b` against `nullptr`"
   if (d.b) {
-    // CHECK-MESSAGES: :[[@LINE-1]]:7: warning: dubious check of 'bool *' against 'nullptr'
-    // CHECK-FIXES: if (*d.b) {
   }
 
   if (d.b) {
@@ -92,9 +89,8 @@ void foo() {
 struct H {
   bool *b;
   void foo() const {
+    // [CXX-W2002]: 9 "Dubious check of `bool *b` against `nullptr`"
     if (b) {
-      // CHECK-MESSAGES: :[[@LINE-1]]:9: warning: dubious check of 'bool *' against 'nullptr'
-      // CHECK-FIXES: if (*b) {
     }
 
     if (b) {
