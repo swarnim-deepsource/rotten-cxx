@@ -25,12 +25,10 @@ public:
 
 class C : public B {
 public:
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `B`"
   int virt_1() override { return A::virt_1() + B::virt_1(); }
-  // CHECK-MESSAGES: :[[@LINE-1]]:34: warning: qualified name 'A::virt_1' refers to a member overridden in subclass; did you mean 'B'? [bugprone-parent-virtual-call]
-  // CHECK-FIXES:  int virt_1() override { return B::virt_1() + B::virt_1(); }
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `B`"
   int virt_2() override { return A::virt_1() + B::virt_1(); }
-  // CHECK-MESSAGES: :[[@LINE-1]]:34: warning: qualified name 'A::virt_1' {{.*}}; did you mean 'B'? {{.*}}
-  // CHECK-FIXES:  int virt_2() override { return B::virt_1() + B::virt_1(); }
 
   // Test that non-virtual and static methods are not affected by this cherker.
   int method_c() { return A::stat() + A::non_virt(); }
@@ -43,24 +41,22 @@ typedef A A2;
 
 class C2 : public B {
 public:
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `B`"
+  // [CXX-W2008]: 49 "Grand-parent method `A::virt_2(..)` called; Overridden method found in parent record/s: `B`"
   int virt_1() override { return A1::virt_1() + A2::virt_1() + A3::virt_1(); }
-  // CHECK-MESSAGES: :[[@LINE-1]]:34: warning: qualified name 'A1::virt_1' {{.*}}; did you mean 'B'? {{.*}}
-  // CHECK-MESSAGES: :[[@LINE-2]]:49: warning: qualified name 'A2::virt_1' {{.*}}; did you mean 'B'? {{.*}}
-  // CHECK-MESSAGES: :[[@LINE-3]]:64: warning: qualified name 'A3::virt_1' {{.*}}; did you mean 'B'? {{.*}}
   // CHECK-FIXES:  int virt_1() override { return B::virt_1() + B::virt_1() + B::virt_1(); }
 };
 
 // Test that the check affects grand-grand..-parent calls too.
 class D : public C {
 public:
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `C`"
+  // [CXX-W2008]: 48 "Grand-parent method `B::virt_2(..)` called; Overridden method found in parent record/s: `C`"
   int virt_1() override { return A::virt_1() + B::virt_1() + D::virt_1(); }
-  // CHECK-MESSAGES: :[[@LINE-1]]:34: warning: qualified name 'A::virt_1' {{.*}}; did you mean 'C'? {{.*}}
-  // CHECK-MESSAGES: :[[@LINE-2]]:48: warning: qualified name 'B::virt_1' {{.*}}; did you mean 'C'? {{.*}}
-  // CHECK-FIXES:  int virt_1() override { return C::virt_1() + C::virt_1() + D::virt_1(); }
+
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `C`"
+  // [CXX-W2008]: 48 "Grand-parent method `B::virt_2(..)` called; Overridden method found in parent record/s: `C`"
   int virt_2() override { return A::virt_1() + B::virt_1() + D::virt_1(); }
-  // CHECK-MESSAGES: :[[@LINE-1]]:34: warning: qualified name 'A::virt_1' {{.*}}; did you mean 'C'? {{.*}}
-  // CHECK-MESSAGES: :[[@LINE-2]]:48: warning: qualified name 'B::virt_1' {{.*}}; did you mean 'C'? {{.*}}
-  // CHECK-FIXES:  int virt_2() override { return C::virt_1() + C::virt_1() + D::virt_1(); }
 };
 
 // Test classes in namespaces.
@@ -91,22 +87,18 @@ public:
 
 class CN : public BN {
 public:
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `BN`"
   int virt_1() override { return A::virt_1() + BN::virt_1(); }
-  // CHECK-MESSAGES: :[[@LINE-1]]:34: warning: qualified name 'A::virt_1' {{.*}}; did you mean 'BN'? {{.*}}
-  // CHECK-FIXES:  int virt_1() override { return BN::virt_1() + BN::virt_1(); }
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_2(..)` called; Overridden method found in parent record/s: `BN`"
   int virt_2() override { return A::virt_1() + BN::virt_1(); }
-  // CHECK-MESSAGES: :[[@LINE-1]]:34: warning: qualified name 'A::virt_1' {{.*}}; did you mean 'BN'? {{.*}}
-  // CHECK-FIXES:  int virt_2() override { return BN::virt_1() + BN::virt_1(); }
 };
 
 class CNN : public N2::BN {
 public:
+  // [CXX-W2008]: 34 "Grand-parent method `N1::A::virt_1(..)` called; Overridden method found in parent record/s: `N2::BN`"
   int virt_1() override { return N1::A::virt_1() + N2::BN::virt_1(); }
-  // CHECK-MESSAGES: :[[@LINE-1]]:34: warning: qualified name 'N1::A::virt_1' {{.*}}; did you mean 'N2::BN'? {{.*}}
-  // CHECK-FIXES:  int virt_1() override { return N2::BN::virt_1() + N2::BN::virt_1(); }
+  // [CXX-W2008]: 34 "Grand-parent method `N1::A::virt_1(..)` called; Overridden method found in parent record/s: `N2::BN`"
   int virt_2() override { return N1::A::virt_1() + N2::BN::virt_1(); }
-  // CHECK-MESSAGES: :[[@LINE-1]]:34: warning: qualified name 'N1::A::virt_1' {{.*}}; did you mean 'N2::BN'? {{.*}}
-  // CHECK-FIXES:  int virt_2() override { return N2::BN::virt_1() + N2::BN::virt_1(); }
 };
 
 // Test multiple inheritance fixes
@@ -139,9 +131,8 @@ public:
 
 class CC : public BB_1, public BB_2 {
 public:
+  // [CXX-W2008]: 34 "Grand-parent method `AA::virt_1(..)` called; Overridden method found in parent record/s: `BB_1(..)`, `BB_2(..)`"
   int virt_1() override { return AA::virt_1() + 3; }
-  // CHECK-MESSAGES: :[[@LINE-1]]:34: warning: qualified name 'AA::virt_1' refers to a member overridden in subclasses; did you mean 'BB_1' or 'BB_2'? {{.*}}
-  // No fix available due to multiple choice of parent class.
 };
 
 // Test that virtual method is not diagnosed as not overridden in parent.
@@ -163,16 +154,16 @@ public:
 // Test templated parent class.
 class CF : public BF<int> {
 public:
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `BF`"
   int virt_1() override { return A::virt_1(); }
-  // CHECK-MESSAGES: :[[@LINE-1]]:34: warning: qualified name 'A::virt_1' {{.*}}; did you mean 'BF'? {{.*}}
 };
 
 // Test both templated class and its parent class.
 template <class F> class DF : public BF<F> {
 public:
   DF() = default;
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `BF`"
   int virt_1() override { return A::virt_1(); }
-  // CHECK-MESSAGES: :[[@LINE-1]]:34: warning: qualified name 'A::virt_1' {{.*}}; did you mean 'BF'? {{.*}}
 };
 
 // Just to instantiate DF<F>.

@@ -1,10 +1,8 @@
-// RUN: %check_clang_tidy %s bugprone-assignment-in-if-condition %t
-#include <iterator>
-
+//clang_tidy
 void f(int arg) {
   int f = 3;
+  // [CXX-W2000]: 8 "Found assignment `f = arg` in `if` condition"
   if ((f = arg) || (f == (arg + 1)))
-  // CHECK-MESSAGES: :[[@LINE-1]]:10: warning: an assignment within an 'if' condition is bug-prone [bugprone-assignment-in-if-condition]
   {
     f = 5;
   }
@@ -12,8 +10,8 @@ void f(int arg) {
 
 void f1(int arg) {
   int f = 3;
+  // [CXX-W2000]: 22 "Found assignment `f = (arg + 1)` in `if` condition"
   if ((f == arg) || (f = (arg + 1)))
-  // CHECK-MESSAGES: :[[@LINE-1]]:24: warning: an assignment within an 'if' condition is bug-prone [bugprone-assignment-in-if-condition]
   {
     f = 5;
   }
@@ -21,19 +19,20 @@ void f1(int arg) {
 
 void f2(int arg) {
   int f = 3;
+  // [CXX-W2000]: 7 "Found assignment `f = arg` in `if` condition"
   if (f = arg)
-  // CHECK-MESSAGES: :[[@LINE-1]]:9: warning: an assignment within an 'if' condition is bug-prone [bugprone-assignment-in-if-condition]
   {
     f = 5;
   }
 }
 
+// [CXX-W2009]: "Non-const variable `v` placed in global scope"
 volatile int v = 32;
 
 void f3(int arg) {
   int f = 3;
+  // [CXX-W2000]: 40 "Found assignment `f = v` in `if` condition"
   if ((f == arg) || ((arg + 6 < f) && (f = v)))
-  // CHECK-MESSAGES: :[[@LINE-1]]:42: warning: an assignment within an 'if' condition is bug-prone [bugprone-assignment-in-if-condition]
   {
     f = 5;
   }
@@ -41,12 +40,11 @@ void f3(int arg) {
 
 void f4(int arg) {
   int f = 3;
+  // [CXX-W2000]: 41 "Found assignment `f = v` in `if` condition"
   if ((f == arg) || ((arg + 6 < f) && ((f = v) || (f < 8))))
-  // CHECK-MESSAGES: :[[@LINE-1]]:43: warning: an assignment within an 'if' condition is bug-prone [bugprone-assignment-in-if-condition]
   {
     f = 5;
-  } else if ((arg + 8 < f) && ((f = v) || (f < 8)))
-  // CHECK-MESSAGES: :[[@LINE-1]]:35: warning: an assignment within an 'if' condition is bug-prone [bugprone-assignment-in-if-condition]
+  } else if ((arg + 8 < f) && ((f = v) || (f < 8))) // [CXX-W2000]: 33 "Found assignment `f = v` in `if` condition"
   {
     f = 6;
   }
@@ -68,13 +66,13 @@ void f5(int arg) {
   if (bo.d == 3) {
     f = 6;
   }
+  // [CXX-W2000]: 7 "Found assignment `bo = 3` in `if` condition"
   if (bo = 3)
-  // CHECK-MESSAGES: :[[@LINE-1]]:10: warning: an assignment within an 'if' condition is bug-prone [bugprone-assignment-in-if-condition]
   {
     f = 7;
   }
+  // [CXX-W2000]: 22 "Found assignment `bo = 6` in `if` condition"
   if ((arg == 3) || (bo = 6))
-  // CHECK-MESSAGES: :[[@LINE-1]]:25: warning: an assignment within an 'if' condition is bug-prone [bugprone-assignment-in-if-condition]
   {
     f = 8;
   }

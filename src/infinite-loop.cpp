@@ -4,28 +4,28 @@
 void simple_infinite_loop1() {
   int i = 0;
   int j = 0;
+  // [CXX-W2006]: 3 "Loop `while` is infinite because of no updates to condition variables (i)"
   while (i < 10) {
-  // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (i) are updated in the loop body [bugprone-infinite-loop]
     j++;
   }
 
+  // [CXX-W2006]: 3 "Loop `while` is infinite because of missing check in the loop condition"
   while (int k = 10) {
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; it does not check any variables in the condition [bugprone-infinite-loop]
     j--;
   }
 
+  // [CXX-W2006]: 3 "Loop `while` is infinite because of missing check in the loop condition"
   while (int k = 10) {
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; it does not check any variables in the condition [bugprone-infinite-loop]
     k--;
   }
 
+  // [CXX-W2006]: 3 "Loop `do-while` is infinite because of no updates to condition variables (i)"
   do {
-  // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (i) are updated in the loop body [bugprone-infinite-loop]
     j++;
   } while (i < 10);
 
+  // [CXX-W2006]: 3 "Loop `for` is infinite because of no updates to condition variables (i)"
   for (i = 0; i < 10; ++j) {
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (i) are updated in the loop body [bugprone-infinite-loop]
   }
 }
 
@@ -33,28 +33,28 @@ void simple_infinite_loop2() {
   int i = 0;
   int j = 0;
   int Limit = 10;
+  // [CXX-W2006]: 3 "Loop `while` is infinite because of no updates to condition variables (i, Limit)"
   while (i < Limit) {
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (i, Limit) are updated in the loop body [bugprone-infinite-loop]
     j++;
   }
 
+  // [CXX-W2006]: 3 "Loop `while` is infinite because of no updates to condition variables (Limit)"
   while (int k = Limit) {
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (Limit) are updated in the loop body [bugprone-infinite-loop]
     j--;
   }
 
+  // [CXX-W2006]: 3 "Loop `while` is infinite because of no updates to condition variables (Limit)"
   while (int k = Limit) {
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (Limit) are updated in the loop body [bugprone-infinite-loop]
     k--;
   }
 
+  // [CXX-W2006]: 3 "Loop `do-while` is infinite because of no updates to condition variables (i, Limit)"
   do {
-  // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (i, Limit) are updated in the loop body [bugprone-infinite-loop]
     j++;
   } while (i < Limit);
 
+  // [CXX-W2006]: 3 "Loop `for` is infinite because of no updates to condition variables (i, Limit)"
   for (i = 0; i < Limit; ++j) {
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (i, Limit) are updated in the loop body [bugprone-infinite-loop]
   }
 }
 
@@ -222,6 +222,7 @@ void escape_after2() {
   int &ii = i;
 }
 
+// [CXX-W2009]: "Non-const variable `glob` placed in global scope"
 int glob;
 
 void global1(int &x) {
@@ -358,8 +359,8 @@ void loop_exit5() {
 
 void loop_exit_in_lambda() {
   int i = 0;
+  // [CXX-W2006]: 3 "Loop `while` is infinite because of no updates to condition variables (i)"
   while (i) {
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (i) are updated in the loop body [bugprone-infinite-loop]
     auto l = []() { return 0; };
   }
 }
@@ -408,8 +409,8 @@ void lambda_capture_from_outside_by_value() {
   accept_callback([finished]() {
     if (finished) {}
   });
+  // [CXX-W2006]: 3 "Loop `while` is infinite because of no updates to condition variables (finished)"
   while (!finished) {
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (finished) are updated in the loop body [bugprone-infinite-loop]
     wait();
   }
 }
@@ -440,8 +441,8 @@ void block_capture_from_outside_by_value() {
   accept_block(^{
     if (finished) {}
   });
+  // [CXX-W2006]: 3 "Loop `while` is infinite because of no updates to condition variables (finished)"
   while (!finished) {
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (finished) are updated in the loop body [bugprone-infinite-loop]
     wait();
   }
 }
@@ -462,8 +463,8 @@ void finish_at_any_time(bool *finished);
 void lambda_capture_with_loop_inside_lambda_bad() {
   bool finished = false;
   auto lambda = [=]() {
+  // [CXX-W2006]: 5 "Loop `while` is infinite because of no updates to condition variables (finished)"
     while (!finished) {
-      // CHECK-MESSAGES: :[[@LINE-1]]:5: warning: this loop is infinite; none of its condition variables (finished) are updated in the loop body [bugprone-infinite-loop]
       wait();
     }
   };
@@ -474,8 +475,8 @@ void lambda_capture_with_loop_inside_lambda_bad() {
 void lambda_capture_with_loop_inside_lambda_bad_init_capture() {
   bool finished = false;
   auto lambda = [captured_finished=finished]() {
+  // [CXX-W2006]: 5 "Loop `while` is infinite because of no updates to condition variables (captured_finished)"
     while (!captured_finished) {
-      // CHECK-MESSAGES: :[[@LINE-1]]:5: warning: this loop is infinite; none of its condition variables (captured_finished) are updated in the loop body [bugprone-infinite-loop]
       wait();
     }
   };
@@ -510,8 +511,8 @@ void lambda_capture_with_loop_inside_lambda_good_init_capture() {
 void block_capture_with_loop_inside_block_bad() {
   bool finished = false;
   auto block = ^() {
+  // [CXX-W2006]: 5 "Loop `while` is infinite because of no updates to condition variables (finished)"
     while (!finished) {
-      // CHECK-MESSAGES: :[[@LINE-1]]:5: warning: this loop is infinite; none of its condition variables (finished) are updated in the loop body [bugprone-infinite-loop]
       wait();
     }
   };
@@ -522,8 +523,8 @@ void block_capture_with_loop_inside_block_bad() {
 void block_capture_with_loop_inside_block_bad_simpler() {
   bool finished = false;
   auto block = ^() {
+  // [CXX-W2006]: 5 "Loop `while` is infinite because of no updates to condition variables (finished)"
     while (!finished) {
-      // CHECK-MESSAGES: :[[@LINE-1]]:5: warning: this loop is infinite; none of its condition variables (finished) are updated in the loop body [bugprone-infinite-loop]
       wait();
     }
   };
@@ -587,15 +588,15 @@ void test_structured_bindings_bad() {
   int x = 0;
   AggregateWithValue val { x };
   auto &[y] = val;
+  // [CXX-W2006]: 3 "Loop `for` is infinite because of no updates to condition variables (x)"
   for (; x < 10; ++y) {
-      // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (x) are updated in the loop body [bugprone-infinite-loop]
   }
 }
 
 void test_volatile_cast() {
   // This is a no-op cast. Clang ignores the qualifier, we should too.
+  // [CXX-W2006]: 3 "Loop `for` is infinite because of no updates to condition variables (i)"
   for (int i = 0; (volatile int)i < 10;) {
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (i) are updated in the loop body [bugprone-infinite-loop]
   }
 }
 
@@ -618,8 +619,8 @@ void test_volatile_concrete_address(int i, int size) {
   // FIXME: This one should probably also be suppressed.
   // Whatever the developer is doing here, they can do that again anywhere else
   // which basically makes it a global.
+  // [CXX-W2006]: 3 "Loop `for` is infinite because of no updates to condition variables (size)"
   for (; *(int *)0x1234 < size;) {
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (size) are updated in the loop body [bugprone-infinite-loop]
   }
 }
 
@@ -637,13 +638,13 @@ void test_dependent_condition() {
   }
 
   const int val2 = some_template_fn<T>();
+  // [CXX-W2006]: 3 "Loop `for` is infinite because of no updates to condition variables (val2)"
   for (; !(val2 == 0 || false);) {
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (val2) are updated in the loop body [bugprone-infinite-loop]
   }
 
   const int val3 = some_template_fn<T>();
+  // [CXX-W2006]: 3 "Loop `do-while` is infinite because of no updates to condition variables (val3)"
   do {
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (val3) are updated in the loop body [bugprone-infinite-loop]
   } while (1, (true) && val3 == 1);
 
   const int val4 = some_template_fn<T>();
@@ -699,14 +700,14 @@ void test_local_static_recursion() {
     test_local_static_recursion(); // no warning, recursively decrement i
   for (; i >= 0; i--)
     ; // no warning, i decrements
+  // [CXX-W2006]: 3 "Loop `while` is infinite because of no updates to condition variables (j)"
   while (j >= 0)
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (j) are updated in the loop body [bugprone-infinite-loop]
     test_local_static_recursion();
 
   int (*p)(int) = 0;
 
+  // [CXX-W2006]: 3 "Loop `while` is infinite because of no updates to condition variables (i)"
   while (i >= 0)
-    // CHECK-MESSAGES: :[[@LINE-1]]:3: warning: this loop is infinite; none of its condition variables (i) are updated in the loop body [bugprone-infinite-loop]
     p = 0;
   while (i >= 0)
     p(0); // we don't know what p points to so no warning

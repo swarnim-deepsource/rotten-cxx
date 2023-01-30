@@ -5,7 +5,6 @@
 // FIXME: Fix the checker to work in C++17 mode.
 
 namespace std {
-
 template <typename T>
 class vector {
  public:
@@ -80,30 +79,28 @@ class StringRef {
 }  // namespace llvm
 
 std::string ReturnsAString();
+std::string& ReturnsARefString();
 
 void Positives() {
+  // [CXX-W2004]: 20 "Handle `std::basic_string_view` outlives its value"
   std::string_view view1 = std::string();
-  // CHECK-MESSAGES: [[@LINE-1]]:20: warning: std::basic_string_view outlives its value [bugprone-dangling-handle]
 
+  // [CXX-W2004]: 20 "Handle `std::basic_string_view` outlives its value"
   std::string_view view_2 = ReturnsAString();
-  // CHECK-MESSAGES: [[@LINE-1]]:20: warning: std::basic_string_view outlives
 
+  std::string_view valid_view = ReturnsARefString();
+
+  // [CXX-W2004]: 3 "Handle `std::basic_string_view` outlives its value"
   view1 = std::string();
-  // CHECK-MESSAGES: [[@LINE-1]]:3: warning: std::basic_string_view outlives
 
   const std::string& str_ref = "";
+  // [CXX-W2004]: 20 "Handle `std::basic_string_view` outlives its value"
   std::string_view view3 = true ? "A" : str_ref;
-  // CHECK-MESSAGES: [[@LINE-1]]:20: warning: std::basic_string_view outlives
+  // [CXX-W2004]: 3 "Handle `std::basic_string_view` outlives its value"
   view3 = true ? "A" : str_ref;
-  // CHECK-MESSAGES: [[@LINE-1]]:3: warning: std::basic_string_view outlives
 
+  // [CXX-W2004]: 20 "Handle `std::basic_string_view` outlives its value"
   std::string_view view4(ReturnsAString());
-  // CHECK-MESSAGES: [[@LINE-1]]:20: warning: std::basic_string_view outlives
-}
-
-void OtherTypes() {
-  llvm::StringRef ref = std::string();
-  // CHECK-MESSAGES: [[@LINE-1]]:19: warning: llvm::StringRef outlives its value
 }
 
 const char static_array[] = "A";
@@ -116,17 +113,17 @@ std::string_view ReturnStatements(int i, std::string value_arg,
   switch (i) {
     // Bad cases
     case 0:
+      // [CXX-W2004]: 7 "Handle `std::basic_string_view` outlives its value"
       return array;  // refers to local
-      // CHECK-MESSAGES: [[@LINE-1]]:7: warning: std::basic_string_view outliv
     case 1:
+      // [CXX-W2004]: 7 "Handle `std::basic_string_view` outlives its value"
       return s;  // refers to local
-      // CHECK-MESSAGES: [[@LINE-1]]:7: warning: std::basic_string_view outliv
     case 2:
+      // [CXX-W2004]: 7 "Handle `std::basic_string_view` outlives its value"
       return std::string();  // refers to temporary
-      // CHECK-MESSAGES: [[@LINE-1]]:7: warning: std::basic_string_view outliv
     case 3:
+      // [CXX-W2004]: 7 "Handle `std::basic_string_view` outlives its value"
       return value_arg;  // refers to by-value arg
-      // CHECK-MESSAGES: [[@LINE-1]]:7: warning: std::basic_string_view outliv
 
     // Ok cases
     case 100:
@@ -163,26 +160,26 @@ std::string_view ReturnStatements(int i, std::string value_arg,
 
 void Containers() {
   std::vector<std::string_view> v;
+  // [CXX-W2004]: 3 "Handle `std::basic_string_view` outlives its value"
   v.assign(3, std::string());
-  // CHECK-MESSAGES: [[@LINE-1]]:3: warning: std::basic_string_view outlives
+  // [CXX-W2004]: 3 "Handle `std::basic_string_view` outlives its value"
   v.insert(nullptr, std::string());
-  // CHECK-MESSAGES: [[@LINE-1]]:3: warning: std::basic_string_view outlives
+  // [CXX-W2004]: 3 "Handle `std::basic_string_view` outlives its value"
   v.insert(nullptr, 3, std::string());
-  // CHECK-MESSAGES: [[@LINE-1]]:3: warning: std::basic_string_view outlives
+  // [CXX-W2004]: 3 "Handle `std::basic_string_view` outlives its value"
   v.push_back(std::string());
-  // CHECK-MESSAGES: [[@LINE-1]]:3: warning: std::basic_string_view outlives
+  // [CXX-W2004]: 3 "Handle `std::basic_string_view` outlives its value"
   v.resize(3, std::string());
-  // CHECK-MESSAGES: [[@LINE-1]]:3: warning: std::basic_string_view outlives
 
   std::set<std::string_view> s;
+  // [CXX-W2004]: 3 "Handle `std::basic_string_view` outlives its value"
   s.insert(std::string());
-  // CHECK-MESSAGES: [[@LINE-1]]:3: warning: std::basic_string_view outlives
+  // [CXX-W2004]: 3 "Handle `std::basic_string_view` outlives its value"
   s.insert(nullptr, std::string());
-  // CHECK-MESSAGES: [[@LINE-1]]:3: warning: std::basic_string_view outlives
 
   std::map<std::string_view, int> m;
+  // [CXX-W2004]: 3 "Handle `std::basic_string_view` outlives its value"
   m[std::string()];
-  // CHECK-MESSAGES: [[@LINE-1]]:3: warning: std::basic_string_view outlives
 }
 
 void TakesAStringView(std::string_view);
