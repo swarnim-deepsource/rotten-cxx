@@ -25,9 +25,11 @@ public:
 
 class C : public B {
 public:
-  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `B`"
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden
+  // method found in parent record/s: `B`"
   int virt_1() override { return A::virt_1() + B::virt_1(); }
-  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `B`"
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden
+  // method found in parent record/s: `B`"
   int virt_2() override { return A::virt_1() + B::virt_1(); }
 
   // Test that non-virtual and static methods are not affected by this cherker.
@@ -41,21 +43,25 @@ typedef A A2;
 
 class C2 : public B {
 public:
-  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `B`"
-  // [CXX-W2008]: 49 "Grand-parent method `A::virt_2(..)` called; Overridden method found in parent record/s: `B`"
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden
+  // method found in parent record/s: `B`" [CXX-W2008]: 49 "Grand-parent method
+  // `A::virt_2(..)` called; Overridden method found in parent record/s: `B`"
   int virt_1() override { return A1::virt_1() + A2::virt_1() + A3::virt_1(); }
-  // CHECK-FIXES:  int virt_1() override { return B::virt_1() + B::virt_1() + B::virt_1(); }
+  // CHECK-FIXES:  int virt_1() override { return B::virt_1() + B::virt_1() +
+  // B::virt_1(); }
 };
 
 // Test that the check affects grand-grand..-parent calls too.
 class D : public C {
 public:
-  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `C`"
-  // [CXX-W2008]: 48 "Grand-parent method `B::virt_2(..)` called; Overridden method found in parent record/s: `C`"
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden
+  // method found in parent record/s: `C`" [CXX-W2008]: 48 "Grand-parent method
+  // `B::virt_2(..)` called; Overridden method found in parent record/s: `C`"
   int virt_1() override { return A::virt_1() + B::virt_1() + D::virt_1(); }
 
-  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `C`"
-  // [CXX-W2008]: 48 "Grand-parent method `B::virt_2(..)` called; Overridden method found in parent record/s: `C`"
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden
+  // method found in parent record/s: `C`" [CXX-W2008]: 48 "Grand-parent method
+  // `B::virt_2(..)` called; Overridden method found in parent record/s: `C`"
   int virt_2() override { return A::virt_1() + B::virt_1() + D::virt_1(); }
 };
 
@@ -87,17 +93,21 @@ public:
 
 class CN : public BN {
 public:
-  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `BN`"
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden
+  // method found in parent record/s: `BN`"
   int virt_1() override { return A::virt_1() + BN::virt_1(); }
-  // [CXX-W2008]: 34 "Grand-parent method `A::virt_2(..)` called; Overridden method found in parent record/s: `BN`"
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_2(..)` called; Overridden
+  // method found in parent record/s: `BN`"
   int virt_2() override { return A::virt_1() + BN::virt_1(); }
 };
 
 class CNN : public N2::BN {
 public:
-  // [CXX-W2008]: 34 "Grand-parent method `N1::A::virt_1(..)` called; Overridden method found in parent record/s: `N2::BN`"
+  // [CXX-W2008]: 34 "Grand-parent method `N1::A::virt_1(..)` called; Overridden
+  // method found in parent record/s: `N2::BN`"
   int virt_1() override { return N1::A::virt_1() + N2::BN::virt_1(); }
-  // [CXX-W2008]: 34 "Grand-parent method `N1::A::virt_1(..)` called; Overridden method found in parent record/s: `N2::BN`"
+  // [CXX-W2008]: 34 "Grand-parent method `N1::A::virt_1(..)` called; Overridden
+  // method found in parent record/s: `N2::BN`"
   int virt_2() override { return N1::A::virt_1() + N2::BN::virt_1(); }
 };
 
@@ -131,7 +141,8 @@ public:
 
 class CC : public BB_1, public BB_2 {
 public:
-  // [CXX-W2008]: 34 "Grand-parent method `AA::virt_1(..)` called; Overridden method found in parent record/s: `BB_1(..)`, `BB_2(..)`"
+  // [CXX-W2008]: 34 "Grand-parent method `AA::virt_1(..)` called; Overridden
+  // method found in parent record/s: `BB_1(..)`, `BB_2(..)`"
   int virt_1() override { return AA::virt_1() + 3; }
 };
 
@@ -154,7 +165,8 @@ public:
 // Test templated parent class.
 class CF : public BF<int> {
 public:
-  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `BF`"
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden
+  // method found in parent record/s: `BF`"
   int virt_1() override { return A::virt_1(); }
 };
 
@@ -162,7 +174,8 @@ public:
 template <class F> class DF : public BF<F> {
 public:
   DF() = default;
-  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden method found in parent record/s: `BF`"
+  // [CXX-W2008]: 34 "Grand-parent method `A::virt_1(..)` called; Overridden
+  // method found in parent record/s: `BF`"
   int virt_1() override { return A::virt_1(); }
 };
 

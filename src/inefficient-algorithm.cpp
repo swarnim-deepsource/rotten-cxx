@@ -41,24 +41,33 @@ template <typename K, typename V> struct unordered_multimap : map<K, V> {};
 
 template <typename K, typename Cmp = less<K>> struct multiset : set<K, Cmp> {};
 
-template <typename FwIt, typename K>
-FwIt find(FwIt, FwIt end, const K &) { return end; }
+template <typename FwIt, typename K> FwIt find(FwIt, FwIt end, const K &) {
+  return end;
+}
 
 template <typename FwIt, typename K, typename Cmp>
-FwIt find(FwIt, FwIt end, const K &, Cmp) { return end; }
+FwIt find(FwIt, FwIt end, const K &, Cmp) {
+  return end;
+}
 
-template <typename FwIt, typename Pred>
-FwIt find_if(FwIt, FwIt end, Pred) { return end; }
+template <typename FwIt, typename Pred> FwIt find_if(FwIt, FwIt end, Pred) {
+  return end;
+}
+
+template <typename FwIt, typename K> unsigned count(FwIt, FwIt, const K &) {
+  return 0;
+}
 
 template <typename FwIt, typename K>
-unsigned count(FwIt, FwIt, const K &) { return 0; }
-
-template <typename FwIt, typename K>
-FwIt lower_bound(FwIt, FwIt end, const K &) { return end; }
+FwIt lower_bound(FwIt, FwIt end, const K &) {
+  return end;
+}
 
 template <typename FwIt, typename K, typename Ord>
-FwIt lower_bound(FwIt, FwIt end, const K &, Ord) { return end; }
+FwIt lower_bound(FwIt, FwIt end, const K &, Ord) {
+  return end;
 }
+} // namespace std
 
 #define FIND_IN_SET(x) find(x.begin(), x.end(), 10)
 // CHECK-FIXES: #define FIND_IN_SET(x) find(x.begin(), x.end(), 10)
@@ -78,9 +87,10 @@ int main() {
   // [CXX-P2000]: "Using inefficient algorithm `count`"
   auto c = count(s.begin(), s.end(), 43);
 
-  // FIXME: Not raising issue due to https://linear.app/deepsource/issue/LAE-6675/raise-issues-in-macro-use-location
+  // FIXME: Not raising issue due to
+  // https://linear.app/deepsource/issue/LAE-6675/raise-issues-in-macro-use-location
 #define SECOND(x, y, z) y
-  SECOND(q,std::count(s.begin(), s.end(), 22),w);
+  SECOND(q, std::count(s.begin(), s.end(), 22), w);
 
   it = find_if(s.begin(), s.end(), [](int) { return false; });
 
@@ -98,13 +108,15 @@ int main() {
 
   // FIXME: Raise a new issue here!
   it = std::find(s.begin(), s.end(), 43, std::greater<int>());
-  // CHECK-MESSAGES: :[[@LINE-1]]:42: warning: different comparers used in the algorithm and the container -performance-inefficient-algorithm-
+  // CHECK-MESSAGES: :[[@LINE-1]]:42: warning: different comparers used in the
+  // algorithm and the container -performance-inefficient-algorithm-
 
   std::set<int, std::greater<int>> news;
   // [CXX-P2000]: "Using inefficient algorithm `find`"
   it = std::find(news.begin(), news.end(), 43, std::greater<int>());
-  
-  // FIXME: Not raising issue due to https://linear.app/deepsource/issue/LAE-6675/raise-issues-in-macro-use-location
+
+  // FIXME: Not raising issue due to
+  // https://linear.app/deepsource/issue/LAE-6675/raise-issues-in-macro-use-location
   FIND_IN_SET(s);
 
   f(s);
