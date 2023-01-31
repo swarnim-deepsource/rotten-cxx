@@ -37,7 +37,8 @@ int intFunc(int);
 struct X {
   int n;
   void m() {
-    // [CXX-W2001]: 9 "`n / 3` integer division used in a floating point context"
+    // [CXX-W2001]: 9 "`n / 3` integer division used in a floating point
+    // context"
     sin(n / 3);
   }
 };
@@ -52,14 +53,17 @@ void integerDivision() {
   char f = *(e + 1 / a);
   bool g = 1;
 
-  // [CXX-W2001]: 11 "`c / (2 + 2)` integer division used in a floating point context"
+  // [CXX-W2001]: 11 "`c / (2 + 2)` integer division used in a floating point
+  // context"
   sin(1 + c / (2 + 2));
   sin(c / (1 + .5));
   sin((c + .5) / 3);
 
-  // [CXX-W2001]: 7 "`intFunc(3) / 5` integer division used in a floating point context"
+  // [CXX-W2001]: 7 "`intFunc(3) / 5` integer division used in a floating point
+  // context"
   sin(intFunc(3) / 5);
-  // [CXX-W2001]: 8 "`2 / intFunc(7)` integer division used in a floating point context"
+  // [CXX-W2001]: 8 "`2 / intFunc(7)` integer division used in a floating point
+  // context"
   acos(2 / intFunc(7));
 
   // [CXX-W2001]: 16 "`2 / 3` integer division used in a floating point context"
@@ -77,7 +81,8 @@ void integerDivision() {
   1 << intFunc(2 / 3);
 
 #define M_SIN sin(a / b);
-  // TODO: My guess is Unknown location error 8 "`x / y` integer division used in a floating point context"
+  // TODO: My guess is Unknown location error 8 "`x / y` integer division used
+  // in a floating point context"
   M_SIN
 
   // [CXX-W2001]: 20 "`a / b` integer division used in a floating point context"
@@ -134,13 +139,16 @@ void integerDivision() {
   tanh(3.14 / f / g);
 
   sin((float)3 / a);
-  // [CXX-P2001]: 3 `acos(..)` accepts a `double` causing implicit type promotion of `float`
+  // [CXX-P2001]: 3 `acos(..)` accepts a `double` causing implicit type
+  // promotion of `float`
   acos(b / (float)3);
-  // [CXX-W2001]: 8 "`(int)3.1400000000000001 / f / g` integer division used in a floating point context", `(int)3.1400000000000001 / f`
+  // [CXX-W2001]: 8 "`(int)3.1400000000000001 / f / g` integer division used in
+  // a floating point context", `(int)3.1400000000000001 / f`
   tanh((int)3.14 / f / g);
 
   sin(3.0 / (float)a);
   acos((float)b / 3.14);
-  // [CXX-W2001]: 8 "`(int)3.1400000000000001 / f` integer division used in a floating point context"
+  // [CXX-W2001]: 8 "`(int)3.1400000000000001 / f` integer division used in a
+  // floating point context"
   tanh((int)3.14 / f / (float)g);
 }
