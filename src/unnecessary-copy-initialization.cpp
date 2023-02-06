@@ -1,15 +1,14 @@
-// RUN: %check_clang_tidy -std=c++17 %s performance-unnecessary-copy-initialization %t
+// RUN: %check_clang_tidy -std=c++17 %s
+// performance-unnecessary-copy-initialization %t
 
-template <typename T>
-struct Iterator {
+template <typename T> struct Iterator {
   void operator++();
   T &operator*() const;
   bool operator!=(const Iterator &) const;
   typedef const T &const_reference;
 };
 
-template <typename T>
-struct ConstIterator {
+template <typename T> struct ConstIterator {
   void operator++();
   const T &operator*() const;
   bool operator!=(const ConstIterator &) const;
@@ -25,16 +24,14 @@ struct ExpensiveToCopyType {
   const ExpensiveToCopyType *pointer() const;
   void nonConstMethod();
   bool constMethod() const;
-  template <typename A>
-  const A &templatedAccessor() const;
+  template <typename A> const A &templatedAccessor() const;
   operator int() const; // Implicit conversion to int.
 };
 
-template <typename T>
-struct Container {
+template <typename T> struct Container {
   bool empty() const;
-  const T& operator[](int) const;
-  const T& operator[](int);
+  const T &operator[](int) const;
+  const T &operator[](int);
   Iterator<T> begin();
   Iterator<T> end();
   ConstIterator<T> begin() const;
@@ -57,13 +54,14 @@ struct WeirdCopyCtorType {
   bool constMethod() const;
 };
 
-// [CXX-W2009]: "Non-const variable `global_expensive_to_copy_type` placed in global scope"
+// [CXX-W2009]: "Non-const variable `global_expensive_to_copy_type` placed in
+// global scope"
 ExpensiveToCopyType global_expensive_to_copy_type;
 
 const ExpensiveToCopyType &ExpensiveTypeReference();
 const ExpensiveToCopyType &freeFunctionWithArg(const ExpensiveToCopyType &);
-const ExpensiveToCopyType &freeFunctionWithDefaultArg(
-    const ExpensiveToCopyType *arg = nullptr);
+const ExpensiveToCopyType &
+freeFunctionWithDefaultArg(const ExpensiveToCopyType *arg = nullptr);
 const TrivialToCopyType &TrivialTypeReference();
 
 void mutate(ExpensiveToCopyType &);
@@ -73,206 +71,262 @@ void useAsConstReference(const ExpensiveToCopyType &);
 void useByValue(ExpensiveToCopyType);
 
 void PositiveFunctionCall() {
-  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoAssigned = ExpensiveTypeReference();
   AutoAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoCopyConstructed(ExpensiveTypeReference());
   AutoCopyConstructed.constMethod();
 
-  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const ExpensiveToCopyType VarAssigned = ExpensiveTypeReference();
-  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable 'VarAssigned'
-  // CHECK-FIXES:   const ExpensiveToCopyType& VarAssigned = ExpensiveTypeReference();
+  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable
+  // 'VarAssigned' CHECK-FIXES:   const ExpensiveToCopyType& VarAssigned =
+  // ExpensiveTypeReference();
   VarAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const ExpensiveToCopyType VarCopyConstructed(ExpensiveTypeReference());
-  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable 'VarCopyConstructed'
-  // CHECK-FIXES: const ExpensiveToCopyType& VarCopyConstructed(ExpensiveTypeReference());
+  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable
+  // 'VarCopyConstructed' CHECK-FIXES: const ExpensiveToCopyType&
+  // VarCopyConstructed(ExpensiveTypeReference());
   VarCopyConstructed.constMethod();
 }
 
 void PositiveMethodCallConstReferenceParam(const ExpensiveToCopyType &Obj) {
-  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoAssigned = Obj.reference();
-  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable 'AutoAssigned'
-  // CHECK-FIXES: const auto& AutoAssigned = Obj.reference();
+  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable
+  // 'AutoAssigned' CHECK-FIXES: const auto& AutoAssigned = Obj.reference();
   AutoAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoCopyConstructed(Obj.reference());
-  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable 'AutoCopyConstructed'
-  // CHECK-FIXES: const auto& AutoCopyConstructed(Obj.reference());
+  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable
+  // 'AutoCopyConstructed' CHECK-FIXES: const auto&
+  // AutoCopyConstructed(Obj.reference());
   AutoCopyConstructed.constMethod();
 
-  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const ExpensiveToCopyType VarAssigned = Obj.reference();
-  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable 'VarAssigned'
-  // CHECK-FIXES: const ExpensiveToCopyType& VarAssigned = Obj.reference();
+  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable
+  // 'VarAssigned' CHECK-FIXES: const ExpensiveToCopyType& VarAssigned =
+  // Obj.reference();
   VarAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const ExpensiveToCopyType VarCopyConstructed(Obj.reference());
-  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable 'VarCopyConstructed'
-  // CHECK-FIXES: const ExpensiveToCopyType& VarCopyConstructed(Obj.reference());
+  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable
+  // 'VarCopyConstructed' CHECK-FIXES: const ExpensiveToCopyType&
+  // VarCopyConstructed(Obj.reference());
   VarCopyConstructed.constMethod();
 }
 
 void PositiveMethodCallConstParam(const ExpensiveToCopyType Obj) {
-  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoAssigned = Obj.reference();
-  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable 'AutoAssigned'
-  // CHECK-FIXES: const auto& AutoAssigned = Obj.reference();
+  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable
+  // 'AutoAssigned' CHECK-FIXES: const auto& AutoAssigned = Obj.reference();
   AutoAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoCopyConstructed(Obj.reference());
-  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable 'AutoCopyConstructed'
-  // CHECK-FIXES: const auto& AutoCopyConstructed(Obj.reference());
+  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable
+  // 'AutoCopyConstructed' CHECK-FIXES: const auto&
+  // AutoCopyConstructed(Obj.reference());
   AutoCopyConstructed.constMethod();
 
-  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const ExpensiveToCopyType VarAssigned = Obj.reference();
-  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable 'VarAssigned'
-  // CHECK-FIXES: const ExpensiveToCopyType& VarAssigned = Obj.reference();
+  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable
+  // 'VarAssigned' CHECK-FIXES: const ExpensiveToCopyType& VarAssigned =
+  // Obj.reference();
   VarAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const ExpensiveToCopyType VarCopyConstructed(Obj.reference());
-  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable 'VarCopyConstructed'
-  // CHECK-FIXES: const ExpensiveToCopyType& VarCopyConstructed(Obj.reference());
+  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable
+  // 'VarCopyConstructed' CHECK-FIXES: const ExpensiveToCopyType&
+  // VarCopyConstructed(Obj.reference());
   VarCopyConstructed.constMethod();
 }
 
 void PositiveMethodCallConstPointerParam(const ExpensiveToCopyType *const Obj) {
-  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoAssigned = Obj->reference();
-  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable 'AutoAssigned'
-  // CHECK-FIXES: const auto& AutoAssigned = Obj->reference();
+  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable
+  // 'AutoAssigned' CHECK-FIXES: const auto& AutoAssigned = Obj->reference();
   AutoAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoCopyConstructed(Obj->reference());
-  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable 'AutoCopyConstructed'
-  // CHECK-FIXES: const auto& AutoCopyConstructed(Obj->reference());
+  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable
+  // 'AutoCopyConstructed' CHECK-FIXES: const auto&
+  // AutoCopyConstructed(Obj->reference());
   AutoCopyConstructed.constMethod();
 
-  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const ExpensiveToCopyType VarAssigned = Obj->reference();
-  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable 'VarAssigned'
-  // CHECK-FIXES: const ExpensiveToCopyType& VarAssigned = Obj->reference();
+  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable
+  // 'VarAssigned' CHECK-FIXES: const ExpensiveToCopyType& VarAssigned =
+  // Obj->reference();
   VarAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const ExpensiveToCopyType VarCopyConstructed(Obj->reference());
-  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable 'VarCopyConstructed'
-  // CHECK-FIXES: const ExpensiveToCopyType& VarCopyConstructed(Obj->reference());
+  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable
+  // 'VarCopyConstructed' CHECK-FIXES: const ExpensiveToCopyType&
+  // VarCopyConstructed(Obj->reference());
   VarCopyConstructed.constMethod();
 }
 
-void PositiveOperatorCallConstReferenceParam(const Container<ExpensiveToCopyType> &C) {
-  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is copy-constructer but only used as const."
+void PositiveOperatorCallConstReferenceParam(
+    const Container<ExpensiveToCopyType> &C) {
+  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoAssigned = C[42];
   AutoAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoCopyConstructed(C[42]);
   AutoCopyConstructed.constMethod();
 
-  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const ExpensiveToCopyType VarAssigned = C[42];
   VarAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const ExpensiveToCopyType VarCopyConstructed(C[42]);
   VarCopyConstructed.constMethod();
 }
 
-void PositiveOperatorCallConstValueParam(const Container<ExpensiveToCopyType> C) {
-  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is copy-constructer but only used as const."
+void PositiveOperatorCallConstValueParam(
+    const Container<ExpensiveToCopyType> C) {
+  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoAssigned = C[42];
   AutoAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoCopyConstructed(C[42]);
   AutoCopyConstructed.constMethod();
 
-  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const ExpensiveToCopyType VarAssigned = C[42];
   VarAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const ExpensiveToCopyType VarCopyConstructed(C[42]);
   VarCopyConstructed.constMethod();
 }
 
-void PositiveOperatorCallConstValueParamAlias(const ExpensiveToCopyContainerAlias C) {
-  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is copy-constructer but only used as const."
+void PositiveOperatorCallConstValueParamAlias(
+    const ExpensiveToCopyContainerAlias C) {
+  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoAssigned = C[42];
   AutoAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoCopyConstructed(C[42]);
-  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable 'AutoCopyConstructed'
+  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable
+  // 'AutoCopyConstructed'
   AutoCopyConstructed.constMethod();
 
-  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const ExpensiveToCopyType VarAssigned = C[42];
-  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable 'VarAssigned'
+  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable
+  // 'VarAssigned'
   VarAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const ExpensiveToCopyType VarCopyConstructed(C[42]);
-  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable 'VarCopyConstructed'
+  // CHECK-MESSAGES: [[@LINE-1]]:29: warning: the const qualified variable
+  // 'VarCopyConstructed'
   VarCopyConstructed.constMethod();
 }
 
-void PositiveOperatorCallConstValueParam(const Container<ExpensiveToCopyType>* C) {
-  // Not supported in original check: "Variable `AutoAssigned`, of an expensive-type, is copy-constructer but only used as const."
+void PositiveOperatorCallConstValueParam(
+    const Container<ExpensiveToCopyType> *C) {
+  // Not supported in original check: "Variable `AutoAssigned`, of an
+  // expensive-type, is copy-constructer but only used as const."
   const auto AutoAssigned = (*C)[42];
   AutoAssigned.constMethod();
 
-  // Not supported in original check: "Variable `AutoCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // Not supported in original check: "Variable `AutoCopyConstructed`, of an
+  // expensive-type, is copy-constructer but only used as const."
   const auto AutoCopyConstructed((*C)[42]);
   AutoCopyConstructed.constMethod();
 
-  // Not supported in original check: "Variable `VarAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // Not supported in original check: "Variable `VarAssigned`, of an
+  // expensive-type, is copy-constructer but only used as const."
   const ExpensiveToCopyType VarAssigned = C->operator[](42);
   VarAssigned.constMethod();
 
-  // Not supported in original check: "Variable `VarCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // Not supported in original check: "Variable `VarCopyConstructed`, of an
+  // expensive-type, is copy-constructer but only used as const."
   const ExpensiveToCopyType VarCopyConstructed(C->operator[](42));
   VarCopyConstructed.constMethod();
 }
 
 void PositiveLocalConstValue() {
   const ExpensiveToCopyType Obj;
-  // [CXX-P2005]: "Variable `UnnecessaryCopy`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `UnnecessaryCopy`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto UnnecessaryCopy = Obj.reference();
-  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable 'UnnecessaryCopy'
-  // CHECK-FIXES: const auto& UnnecessaryCopy = Obj.reference();
+  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable
+  // 'UnnecessaryCopy' CHECK-FIXES: const auto& UnnecessaryCopy =
+  // Obj.reference();
   UnnecessaryCopy.constMethod();
 }
 
 void PositiveLocalConstRef() {
   const ExpensiveToCopyType Obj;
   const ExpensiveToCopyType &ConstReference = Obj.reference();
-  // [CXX-P2005]: "Variable `UnnecessaryCopy`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `UnnecessaryCopy`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto UnnecessaryCopy = ConstReference.reference();
-  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable 'UnnecessaryCopy'
-  // CHECK-FIXES: const auto& UnnecessaryCopy = ConstReference.reference();
+  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable
+  // 'UnnecessaryCopy' CHECK-FIXES: const auto& UnnecessaryCopy =
+  // ConstReference.reference();
   UnnecessaryCopy.constMethod();
 }
 
 void PositiveLocalConstPointer() {
   const ExpensiveToCopyType Obj;
   const ExpensiveToCopyType *const ConstPointer = &Obj;
-  // [CXX-P2005]: "Variable `UnnecessaryCopy`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `UnnecessaryCopy`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto UnnecessaryCopy = ConstPointer->reference();
-  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable 'UnnecessaryCopy'
-  // CHECK-FIXES: const auto& UnnecessaryCopy = ConstPointer->reference();
+  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable
+  // 'UnnecessaryCopy' CHECK-FIXES: const auto& UnnecessaryCopy =
+  // ConstPointer->reference();
   UnnecessaryCopy.constMethod();
 }
 
@@ -288,26 +342,31 @@ void NegativeStaticLocalVar(const ExpensiveToCopyType &Obj) {
 }
 
 void PositiveFunctionCallExpensiveTypeNonConstVariable() {
-  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   auto AutoAssigned = ExpensiveTypeReference();
   AutoAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   auto AutoCopyConstructed(ExpensiveTypeReference());
   AutoCopyConstructed.constMethod();
 
-  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   ExpensiveToCopyType VarAssigned = ExpensiveTypeReference();
   VarAssigned.constMethod();
 
-  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `VarCopyConstructed`, of an expensive-type, is
+  // copy-constructer but only used as const."
   ExpensiveToCopyType VarCopyConstructed(ExpensiveTypeReference());
   VarCopyConstructed.constMethod();
 }
 
 void positiveNonConstVarInCodeBlock(const ExpensiveToCopyType &Obj) {
   {
-    // [CXX-P2005]: "Variable `Assigned`, of an expensive-type, is copy-constructer but only used as const."
+    // [CXX-P2005]: "Variable `Assigned`, of an expensive-type, is
+    // copy-constructer but only used as const."
     auto Assigned = Obj.reference();
     // CHECK-MESSAGES: [[@LINE-1]]:10: warning: the variable 'Assigned'
     // CHECK-FIXES: const auto& Assigned = Obj.reference();
@@ -319,10 +378,12 @@ void positiveNonConstVarInCodeBlock(const ExpensiveToCopyType &Obj) {
 
 void positiveNonConstVarInCodeBlockWithAlias(const ExpensiveToCopyType &Obj) {
   {
-    // [CXX-P2005]: "Variable `Assigned`, of an expensive-type, is copy-constructer but only used as const."
+    // [CXX-P2005]: "Variable `Assigned`, of an expensive-type, is
+    // copy-constructer but only used as const."
     const ExpensiveToCopyType Assigned = Obj.referenceWithAlias();
     // CHECK-MESSAGES: [[@LINE-1]]:31: warning: the const qualified variable
-    // CHECK-FIXES: const ExpensiveToCopyType& Assigned = Obj.referenceWithAlias();
+    // CHECK-FIXES: const ExpensiveToCopyType& Assigned =
+    // Obj.referenceWithAlias();
     useAsConstReference(Assigned);
   }
 }
@@ -351,10 +412,11 @@ void negativeNonConstVarWithNonConstUse(const ExpensiveToCopyType &Obj) {
 }
 
 void PositiveMethodCallNonConstRefNotModified(ExpensiveToCopyType &Obj) {
-  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoAssigned = Obj.reference();
-  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable 'AutoAssigned'
-  // CHECK-FIXES: const auto& AutoAssigned = Obj.reference();
+  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable
+  // 'AutoAssigned' CHECK-FIXES: const auto& AutoAssigned = Obj.reference();
   AutoAssigned.constMethod();
 }
 
@@ -367,28 +429,33 @@ void NegativeMethodCallNonConstRefIsModified(ExpensiveToCopyType &Obj) {
 }
 
 void PositiveMethodCallNonConstNotModified(ExpensiveToCopyType Obj) {
-    // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoAssigned = Obj.reference();
-  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable 'AutoAssigned'
-  // CHECK-FIXES: const auto& AutoAssigned = Obj.reference();
+  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable
+  // 'AutoAssigned' CHECK-FIXES: const auto& AutoAssigned = Obj.reference();
   AutoAssigned.constMethod();
 }
 
-void NegativeMethodCallNonConstValueArgumentIsModified(ExpensiveToCopyType Obj) {
+void NegativeMethodCallNonConstValueArgumentIsModified(
+    ExpensiveToCopyType Obj) {
   Obj.nonConstMethod();
   const auto AutoAssigned = Obj.reference();
 }
 
-void PositiveMethodCallNonConstPointerNotModified(ExpensiveToCopyType *const Obj) {
-  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is copy-constructer but only used as const."
+void PositiveMethodCallNonConstPointerNotModified(
+    ExpensiveToCopyType *const Obj) {
+  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoAssigned = Obj->reference();
-  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable 'AutoAssigned'
-  // CHECK-FIXES: const auto& AutoAssigned = Obj->reference();
+  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable
+  // 'AutoAssigned' CHECK-FIXES: const auto& AutoAssigned = Obj->reference();
   Obj->constMethod();
   AutoAssigned.constMethod();
 }
 
-void NegativeMethodCallNonConstPointerIsModified(ExpensiveToCopyType *const Obj) {
+void NegativeMethodCallNonConstPointerIsModified(
+    ExpensiveToCopyType *const Obj) {
   const auto AutoAssigned = Obj->reference();
   const auto AutoCopyConstructed(Obj->reference());
   const ExpensiveToCopyType VarAssigned = Obj->reference();
@@ -398,10 +465,12 @@ void NegativeMethodCallNonConstPointerIsModified(ExpensiveToCopyType *const Obj)
 
 void PositiveLocalVarIsNotModified() {
   ExpensiveToCopyType LocalVar;
-  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto AutoAssigned = LocalVar.reference();
-  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable 'AutoAssigned'
-  // CHECK-FIXES: const auto& AutoAssigned = LocalVar.reference();
+  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable
+  // 'AutoAssigned' CHECK-FIXES: const auto& AutoAssigned =
+  // LocalVar.reference();
   AutoAssigned.constMethod();
 }
 
@@ -423,24 +492,29 @@ struct NegativeConstructor {
 // Ensure fix is not applied.
 // CHECK-FIXES: auto AssignedInMacro = T.reference();
 
-// Raise CXX-P2005: "Variable `AssignedInMacro`, of an expensive-type, is copy-constructer but only used as const."
+// Raise CXX-P2005: "Variable `AssignedInMacro`, of an expensive-type, is
+// copy-constructer but only used as const."
 UNNECESSARY_COPY_INIT_IN_MACRO_BODY(ExpensiveToCopyType)
-// CHECK-MESSAGES: [[@LINE-1]]:1: warning: the variable 'AssignedInMacro' is copy-constructed
+// CHECK-MESSAGES: [[@LINE-1]]:1: warning: the variable 'AssignedInMacro' is
+// copy-constructed
 
 #define UNNECESSARY_COPY_INIT_IN_MACRO_ARGUMENT(ARGUMENT) ARGUMENT
 
 void PositiveMacroArgument(const ExpensiveToCopyType &Obj) {
-  // Raise CXX-P2005: "Variable `CopyInMacroArg`, of an expensive-type, is copy-constructer but only used as const."
-  UNNECESSARY_COPY_INIT_IN_MACRO_ARGUMENT(auto CopyInMacroArg = Obj.reference());
-  // CHECK-MESSAGES: [[@LINE-1]]:48: warning: the variable 'CopyInMacroArg' is copy-constructed
-  // Ensure fix is not applied.
-  // CHECK-FIXES: auto CopyInMacroArg = Obj.reference()
+  // Raise CXX-P2005: "Variable `CopyInMacroArg`, of an expensive-type, is
+  // copy-constructer but only used as const."
+  UNNECESSARY_COPY_INIT_IN_MACRO_ARGUMENT(auto CopyInMacroArg =
+                                              Obj.reference());
+  // CHECK-MESSAGES: [[@LINE-1]]:48: warning: the variable 'CopyInMacroArg' is
+  // copy-constructed Ensure fix is not applied. CHECK-FIXES: auto
+  // CopyInMacroArg = Obj.reference()
   CopyInMacroArg.constMethod();
 }
 
 void PositiveLocalCopyConstMethodInvoked() {
   ExpensiveToCopyType orig;
-  // [CXX-P2005]: "Variable `copy_1`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `copy_1`, of an expensive-type, is copy-constructer
+  // but only used as const."
   ExpensiveToCopyType copy_1 = orig;
   copy_1.constMethod();
   orig.constMethod();
@@ -448,7 +522,8 @@ void PositiveLocalCopyConstMethodInvoked() {
 
 void PositiveLocalCopyUsingExplicitCopyCtor() {
   ExpensiveToCopyType orig;
-  // [CXX-P2005]: "Variable `copy_2`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `copy_2`, of an expensive-type, is copy-constructer
+  // but only used as const."
   ExpensiveToCopyType copy_2(orig);
   // CHECK-MESSAGES: [[@LINE-1]]:23: warning: local copy 'copy_2'
   // CHECK-FIXES: const ExpensiveToCopyType& copy_2(orig);
@@ -457,7 +532,8 @@ void PositiveLocalCopyUsingExplicitCopyCtor() {
 }
 
 void PositiveLocalCopyCopyIsArgument(const ExpensiveToCopyType &orig) {
-  // [CXX-P2005]: "Variable `copy_3`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `copy_3`, of an expensive-type, is copy-constructer
+  // but only used as const."
   ExpensiveToCopyType copy_3 = orig;
   // CHECK-MESSAGES: [[@LINE-1]]:23: warning: local copy 'copy_3'
   // CHECK-FIXES: const ExpensiveToCopyType& copy_3 = orig;
@@ -466,7 +542,8 @@ void PositiveLocalCopyCopyIsArgument(const ExpensiveToCopyType &orig) {
 
 void PositiveLocalCopyUsedAsConstRef() {
   ExpensiveToCopyType orig;
-  // [CXX-P2005]: "Variable `copy_4`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `copy_4`, of an expensive-type, is copy-constructer
+  // but only used as const."
   ExpensiveToCopyType copy_4 = orig;
   // CHECK-MESSAGES: [[@LINE-1]]:23: warning: local copy 'copy_4'
   // CHECK-FIXES: const ExpensiveToCopyType& copy_4 = orig;
@@ -476,11 +553,13 @@ void PositiveLocalCopyUsedAsConstRef() {
 
 void PositiveLocalCopyTwice() {
   ExpensiveToCopyType orig;
-  // [CXX-P2005]: "Variable `copy_5`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `copy_5`, of an expensive-type, is copy-constructer
+  // but only used as const."
   ExpensiveToCopyType copy_5 = orig;
   // CHECK-MESSAGES: [[@LINE-1]]:23: warning: local copy 'copy_5'
   // CHECK-FIXES: const ExpensiveToCopyType& copy_5 = orig;
-  // [CXX-P2005]: "Variable `copy_6`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `copy_6`, of an expensive-type, is copy-constructer
+  // but only used as const."
   ExpensiveToCopyType copy_6 = copy_5;
   // CHECK-MESSAGES: [[@LINE-1]]:23: warning: local copy 'copy_6'
   // CHECK-FIXES: const ExpensiveToCopyType& copy_6 = copy_5;
@@ -489,16 +568,17 @@ void PositiveLocalCopyTwice() {
   orig.constMethod();
 }
 
-
 void PositiveLocalCopyWeirdCopy() {
   WeirdCopyCtorType orig;
-  // [CXX-P2005]: "Variable `weird_1`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `weird_1`, of an expensive-type, is copy-constructer
+  // but only used as const."
   WeirdCopyCtorType weird_1(orig);
   // CHECK-MESSAGES: [[@LINE-1]]:21: warning: local copy 'weird_1'
   // CHECK-FIXES: const WeirdCopyCtorType& weird_1(orig);
   weird_1.constMethod();
 
-  // [CXX-P2005]: "Variable `weird_2`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `weird_2`, of an expensive-type, is copy-constructer
+  // but only used as const."
   WeirdCopyCtorType weird_2 = orig;
   // CHECK-MESSAGES: [[@LINE-1]]:21: warning: local copy 'weird_2'
   // CHECK-FIXES: const WeirdCopyCtorType& weird_2 = orig;
@@ -558,7 +638,8 @@ void NegativeLocalCopyWeirdNonCopy() {
 }
 void WarningOnlyMultiDeclStmt() {
   ExpensiveToCopyType orig;
-  // [CXX-P2005]: "Variable `copy`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `copy`, of an expensive-type, is copy-constructer
+  // but only used as const."
   ExpensiveToCopyType copy = orig, copy2;
   copy.constMethod();
 }
@@ -588,10 +669,8 @@ void negativeInitialzedFromFreeFunctionWithNonDefaultArg() {
 namespace std {
 inline namespace __1 {
 
-template <class>
-class function;
-template <class R, class... ArgTypes>
-class function<R(ArgTypes...)> {
+template <class> class function;
+template <class R, class... ArgTypes> class function<R(ArgTypes...)> {
 public:
   function();
   function(const function &Other);
@@ -625,8 +704,7 @@ void negativeTypedefedStdFunction() {
 
 namespace fake {
 namespace std {
-template <class R, class... Args>
-struct function {
+template <class R, class... Args> struct function {
   // Custom copy constructor makes it expensive to copy;
   function(const function &);
   void constMethod() const;
@@ -634,10 +712,11 @@ struct function {
 } // namespace std
 
 void positiveFakeStdFunction(std::function<void(int)> F) {
-  // [CXX-P2005]: "Variable `Copy`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `Copy`, of an expensive-type, is copy-constructer
+  // but only used as const."
   auto Copy = F;
-  // CHECK-MESSAGES: [[@LINE-1]]:8: warning: local copy 'Copy' of the variable 'F' is never modified;
-  // CHECK-FIXES: const auto& Copy = F;
+  // CHECK-MESSAGES: [[@LINE-1]]:8: warning: local copy 'Copy' of the variable
+  // 'F' is never modified; CHECK-FIXES: const auto& Copy = F;
   Copy.constMethod();
 }
 
@@ -646,10 +725,12 @@ void positiveFakeStdFunction(std::function<void(int)> F) {
 void positiveInvokedOnStdFunction(
     std::function<void(const ExpensiveToCopyType &)> Update,
     const ExpensiveToCopyType Orig) {
-  // [CXX-P2005]: "Variable `Copy`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `Copy`, of an expensive-type, is copy-constructer
+  // but only used as const."
   auto Copy = Orig.reference();
-  // CHECK-MESSAGES: [[@LINE-1]]:8: warning: the variable 'Copy' is copy-constructed from a const reference
-  // CHECK-FIXES: const auto& Copy = Orig.reference();
+  // CHECK-MESSAGES: [[@LINE-1]]:8: warning: the variable 'Copy' is
+  // copy-constructed from a const reference CHECK-FIXES: const auto& Copy =
+  // Orig.reference();
   Update(Copy);
 }
 
@@ -670,7 +751,8 @@ void negativeCopiedFromReferenceToModifiedVar() {
 void positiveCopiedFromReferenceToConstVar() {
   ExpensiveToCopyType Orig;
   const auto &Ref = Orig;
-  // [CXX-P2005]: "Variable `UnnecessaryCopy`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `UnnecessaryCopy`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto UnnecessaryCopy = Ref;
   // CHECK-MESSAGES: [[@LINE-1]]:14: warning: local copy 'UnnecessaryCopy' of
   // CHECK-FIXES: const auto& UnnecessaryCopy = Ref;
@@ -707,7 +789,8 @@ void negativeAliasTypedefedType() {
 void positiveCopiedFromGetterOfReferenceToConstVar() {
   ExpensiveToCopyType Orig;
   const auto &Ref = Orig.reference();
-  // [CXX-P2005]: "Variable `UnnecessaryCopy`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `UnnecessaryCopy`, of an expensive-type, is
+  // copy-constructer but only used as const."
   auto UnnecessaryCopy = Ref.reference();
   // CHECK-MESSAGES: [[@LINE-1]]:8: warning: the variable 'UnnecessaryCopy' is
   // CHECK-FIXES: const auto& UnnecessaryCopy = Ref.reference();
@@ -726,18 +809,21 @@ void positiveUnusedReferenceIsRemoved() {
   // CHECK-FIXES-NOT: // Trailing comment.
   // clang-format on
 
-  // [CXX-P2005]: "Variable `UnusedAndUnnecessary`, of an expensive-type, is copy-constructer but never used."
+  // [CXX-P2005]: "Variable `UnusedAndUnnecessary`, of an expensive-type, is
+  // copy-constructer but never used."
   auto UnusedAndUnnecessary = ExpensiveTypeReference();
   // Comments on a new line should not be deleted.
-  // CHECK-MESSAGES: [[@LINE-2]]:8: warning: the variable 'UnusedAndUnnecessary' is copy-constructed
-  // CHECK-FIXES-NOT: auto UnusedAndUnnecessary = ExpensiveTypeReference();
-  // CHECK-FIXES: // Comments on a new line should not be deleted.
+  // CHECK-MESSAGES: [[@LINE-2]]:8: warning: the variable 'UnusedAndUnnecessary'
+  // is copy-constructed CHECK-FIXES-NOT: auto UnusedAndUnnecessary =
+  // ExpensiveTypeReference(); CHECK-FIXES: // Comments on a new line should not
+  // be deleted.
 }
 
 void positiveLoopedOverObjectIsConst() {
   const Container<ExpensiveToCopyType> Orig;
   for (const auto &Element : Orig) {
-    // [CXX-P2005]: "Variable `Copy`, of an expensive-type, is copy-constructer but only used as const."
+    // [CXX-P2005]: "Variable `Copy`, of an expensive-type, is copy-constructer
+    // but only used as const."
     const auto Copy = Element;
     // CHECK-MESSAGES: [[@LINE-1]]:16: warning: local copy 'Copy'
     // CHECK-FIXES: const auto& Copy = Element;
@@ -748,7 +834,8 @@ void positiveLoopedOverObjectIsConst() {
   auto Lambda = []() {
     const Container<ExpensiveToCopyType> Orig;
     for (const auto &Element : Orig) {
-      // [CXX-P2005]: "Variable `Copy`, of an expensive-type, is copy-constructer but only used as const."
+      // [CXX-P2005]: "Variable `Copy`, of an expensive-type, is
+      // copy-constructer but only used as const."
       const auto Copy = Element;
       // CHECK-MESSAGES: [[@LINE-1]]:18: warning: local copy 'Copy'
       // CHECK-FIXES: const auto& Copy = Element;
@@ -811,11 +898,9 @@ void negativeStructuredBinding() {
   D.constMethod();
 }
 
-template <typename A>
-const A &templatedReference();
+template <typename A> const A &templatedReference();
 
-template <typename A, typename B>
-void negativeTemplateTypes() {
+template <typename A, typename B> void negativeTemplateTypes() {
   A Orig;
   // Different replaced template type params do not trigger the check. In some
   // template instantiation this might not be a copy but an implicit
@@ -829,39 +914,49 @@ void negativeTemplateTypes() {
   B NecessaryCopy2 = Orig.template templatedAccessor<A>();
 
   // Non-dependent types in template still trigger the check.
-  // [CXX-P2005]: "Variable `UnnecessaryCopy`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `UnnecessaryCopy`, of an expensive-type, is
+  // copy-constructer but only used as const."
   const auto UnnecessaryCopy = ExpensiveTypeReference();
-  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable 'UnnecessaryCopy' is copy-constructed
-  // CHECK-FIXES: const auto& UnnecessaryCopy = ExpensiveTypeReference();
+  // CHECK-MESSAGES: [[@LINE-1]]:14: warning: the const qualified variable
+  // 'UnnecessaryCopy' is copy-constructed CHECK-FIXES: const auto&
+  // UnnecessaryCopy = ExpensiveTypeReference();
   UnnecessaryCopy.constMethod();
 }
 
 void instantiateNegativeTemplateTypes() {
   negativeTemplateTypes<ExpensiveToCopyType, ExpensiveToCopyType>();
-  // This template instantiation would not compile if the `AmbiguousCopy` above was made a reference.
+  // This template instantiation would not compile if the `AmbiguousCopy` above
+  // was made a reference.
   negativeTemplateTypes<ExpensiveToCopyType, int>();
 }
 
-template <typename A>
-void positiveSingleTemplateType() {
+template <typename A> void positiveSingleTemplateType() {
   A Orig;
-  // [CXX-P2005]: "Variable `SingleTmplParmTypeCopy`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `SingleTmplParmTypeCopy`, of an expensive-type, is
+  // copy-constructer but only used as const."
   A SingleTmplParmTypeCopy = Orig;
-  // CHECK-MESSAGES: [[@LINE-1]]:5: warning: local copy 'SingleTmplParmTypeCopy' of the variable 'Orig' is never modified
-  // CHECK-FIXES: const A& SingleTmplParmTypeCopy = Orig;
+  // CHECK-MESSAGES: [[@LINE-1]]:5: warning: local copy 'SingleTmplParmTypeCopy'
+  // of the variable 'Orig' is never modified CHECK-FIXES: const A&
+  // SingleTmplParmTypeCopy = Orig;
   SingleTmplParmTypeCopy.constMethod();
 
-  // [CXX-P2005]: "Variable `UnnecessaryCopy2`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `UnnecessaryCopy2`, of an expensive-type, is
+  // copy-constructer but only used as const."
   A UnnecessaryCopy2 = templatedReference<A>();
-  // CHECK-MESSAGES: [[@LINE-1]]:5: warning: the variable 'UnnecessaryCopy2' is copy-constructed from a const reference
-  // CHECK-FIXES: const A& UnnecessaryCopy2 = templatedReference<A>();
+  // CHECK-MESSAGES: [[@LINE-1]]:5: warning: the variable 'UnnecessaryCopy2' is
+  // copy-constructed from a const reference CHECK-FIXES: const A&
+  // UnnecessaryCopy2 = templatedReference<A>();
   UnnecessaryCopy2.constMethod();
 
-  // [CXX-P2005]: "Variable `UnnecessaryCopy3`, of an expensive-type, is copy-constructer but only used as const."
+  // [CXX-P2005]: "Variable `UnnecessaryCopy3`, of an expensive-type, is
+  // copy-constructer but only used as const."
   A UnnecessaryCopy3 = Orig.template templatedAccessor<A>();
-  // CHECK-MESSAGES: [[@LINE-1]]:5: warning: the variable 'UnnecessaryCopy3' is copy-constructed from a const reference
-  // CHECK-FIXES: const A& UnnecessaryCopy3 = Orig.template templatedAccessor<A>();
+  // CHECK-MESSAGES: [[@LINE-1]]:5: warning: the variable 'UnnecessaryCopy3' is
+  // copy-constructed from a const reference CHECK-FIXES: const A&
+  // UnnecessaryCopy3 = Orig.template templatedAccessor<A>();
   UnnecessaryCopy3.constMethod();
 }
 
-void instantiatePositiveSingleTemplateType() { positiveSingleTemplateType<ExpensiveToCopyType>(); }
+void instantiatePositiveSingleTemplateType() {
+  positiveSingleTemplateType<ExpensiveToCopyType>();
+}
