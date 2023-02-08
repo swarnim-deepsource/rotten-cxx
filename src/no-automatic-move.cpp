@@ -1,4 +1,5 @@
-// RUN: %check_clang_tidy -std=c++11-or-later %s performance-no-automatic-move %t
+// RUN: %check_clang_tidy -std=c++11-or-later %s performance-no-automatic-move
+// %t
 
 struct Obj {
   Obj();
@@ -7,8 +8,7 @@ struct Obj {
   virtual ~Obj();
 };
 
-template <typename T>
-struct StatusOr {
+template <typename T> struct StatusOr {
   StatusOr(const T &);
   StatusOr(T &&);
 };
@@ -18,8 +18,7 @@ struct NonTemplate {
   NonTemplate(Obj &&);
 };
 
-template <typename T>
-T Make();
+template <typename T> T Make();
 
 StatusOr<Obj> PositiveStatusOrConstValue() {
   const Obj obj = Make<Obj>();
@@ -53,13 +52,9 @@ StatusOr<Obj> PositiveStatusOrLifetimeExtension() {
 
 // Negatives.
 
-StatusOr<Obj> Temporary() {
-  return Make<const Obj>();
-}
+StatusOr<Obj> Temporary() { return Make<const Obj>(); }
 
-StatusOr<Obj> ConstTemporary() {
-  return Make<const Obj>();
-}
+StatusOr<Obj> ConstTemporary() { return Make<const Obj>(); }
 
 StatusOr<Obj> Nrvo() {
   Obj obj = Make<Obj>();
@@ -78,9 +73,7 @@ StatusOr<Obj> ConstRef() {
 
 const Obj global;
 
-StatusOr<Obj> Global() {
-  return global;
-}
+StatusOr<Obj> Global() { return global; }
 
 struct FromConstRefOnly {
   FromConstRefOnly(const Obj &);
