@@ -1,13 +1,11 @@
 // RUN: %check_clang_tidy %s bugprone-bool-pointer-implicit-conversion %t
 
 bool *SomeFunction();
-void SomeOtherFunction(bool*);
+void SomeOtherFunction(bool *);
 bool F();
 void G(bool);
 
-
-template <typename T>
-void t(T b) {
+template <typename T> void t(T b) {
   if (b) {
   }
 }
@@ -29,8 +27,7 @@ void foo() {
 
 #define TESTMACRO if (b || F())
 
-  TESTMACRO {
-  }
+  TESTMACRO {}
 
   t(b);
 
@@ -70,7 +67,7 @@ void foo() {
 
   struct {
     bool *b;
-  } d = { SomeFunction() };
+  } d = {SomeFunction()};
 
   // [CXX-W2002]: 7 "Dubious check of `bool *d.b` against `nullptr`"
   if (d.b) {
@@ -80,8 +77,8 @@ void foo() {
     (void)*d.b; // no-warning
   }
 
-#define CHECK(b) \
-  if (b) {       \
+#define CHECK(b)                                                               \
+  if (b) {                                                                     \
   }
   CHECK(c)
 }

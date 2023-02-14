@@ -10,7 +10,7 @@ template <typename T> struct vec_iterator {
 };
 
 template <typename T> struct vector {
-  typedef vec_iterator<T*> iterator;
+  typedef vec_iterator<T *> iterator;
 
   iterator begin();
   iterator end();
@@ -20,8 +20,8 @@ template <typename T> struct vector {
 };
 
 template <typename T> struct vector_with_const_iterator {
-  typedef vec_iterator<T*> iterator;
-  typedef vec_iterator<const T*> const_iterator;
+  typedef vec_iterator<T *> iterator;
+  typedef vec_iterator<const T *> const_iterator;
 
   iterator begin();
   iterator end();
