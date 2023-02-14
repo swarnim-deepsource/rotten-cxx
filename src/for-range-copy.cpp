@@ -1,34 +1,36 @@
-// RUN: %check_clang_tidy %s performance-for-range-copy %t -- -- -fno-delayed-template-parsing
+// RUN: %check_clang_tidy %s performance-for-range-copy %t -- --
+// -fno-delayed-template-parsing
 
 namespace std {
 
-template <typename _Tp>
-struct remove_reference { typedef _Tp type; };
-template <typename _Tp>
-struct remove_reference<_Tp&> { typedef _Tp type; };
-template <typename _Tp>
-struct remove_reference<_Tp&&> { typedef _Tp type; };
+template <typename _Tp> struct remove_reference {
+  typedef _Tp type;
+};
+template <typename _Tp> struct remove_reference<_Tp &> {
+  typedef _Tp type;
+};
+template <typename _Tp> struct remove_reference<_Tp &&> {
+  typedef _Tp type;
+};
 
 template <typename _Tp>
 constexpr typename std::remove_reference<_Tp>::type &&move(_Tp &&__t) {
   return static_cast<typename std::remove_reference<_Tp>::type &&>(__t);
 }
 
-} // std
+} // namespace std
 
-template <typename T>
-struct Iterator {
+template <typename T> struct Iterator {
   void operator++() {}
-  const T& operator*() {
+  const T &operator*() {
     // [CXX-W2011]
-    static T* TT = new T();
+    static T *TT = new T();
     return *TT;
   }
   bool operator!=(const Iterator &) { return false; }
-  typedef const T& const_reference;
+  typedef const T &const_reference;
 };
-template <typename T>
-struct View {
+template <typename T> struct View {
   View() = default;
   T begin() { return T(); }
   T begin() const { return T(); }
@@ -37,21 +39,18 @@ struct View {
   typedef typename T::const_reference const_reference;
 };
 
-struct ConstructorConvertible {
-};
+struct ConstructorConvertible {};
 
 struct S {
   S();
   S(const S &);
-  S(const ConstructorConvertible&) {}
+  S(const ConstructorConvertible &) {}
   ~S();
   S &operator=(const S &);
 };
 
 struct Convertible {
-  operator S() const {
-    return S();
-  }
+  operator S() const { return S(); }
 };
 
 void negativeConstReference() {
@@ -71,29 +70,30 @@ void negativeImplicitConstructorConversion() {
   }
 }
 
-template <typename T>
-void uninstantiated() {
+template <typename T> void uninstantiated() {
   // [CXX-P2004]: "Expensive copy to `S1` in every iteration."
-  for (const S S1 : View<Iterator<S>>()) {}
+  for (const S S1 : View<Iterator<S>>()) {
+  }
 
   // Don't warn on dependent types.
   for (const T t1 : View<Iterator<T>>()) {
   }
 }
 
-template <typename T>
-void instantiated() {
+template <typename T> void instantiated() {
   // [CXX-P2004]: "Expensive copy to `S2` in every iteration."
-  for (const S S2 : View<Iterator<S>>()) {}
+  for (const S S2 : View<Iterator<S>>()) {
+  }
 
   // [CXX-P2004]: "Expensive copy to `T2` in every iteration."
-  for (const T T2 : View<Iterator<T>>()) {}
+  for (const T T2 : View<Iterator<T>>()) {
+  }
 }
 
-template <typename T>
-void instantiatedNegativeTypedefConstReference() {
+template <typename T> void instantiatedNegativeTypedefConstReference() {
   for (typename T::const_reference T2 : T()) {
-    // [CXX-P2005]: "Variable `S1`, of an expensive-type, is copy-constructer but never used."
+    // [CXX-P2005]: "Variable `S1`, of an expensive-type, is copy-constructer
+    // but never used."
     S S1 = T2;
   }
 }
@@ -107,18 +107,12 @@ void f() {
 struct Mutable {
   Mutable() {}
   Mutable(const Mutable &) = default;
-  Mutable(Mutable&&) = default;
+  Mutable(Mutable &&) = default;
   Mutable(const Mutable &, const Mutable &) {}
   void setBool(bool B) {}
-  bool constMethod() const {
-    return true;
-  }
-  Mutable& operator[](int I) {
-    return *this;
-  }
-  bool operator==(const Mutable &Other) const {
-    return true;
-  }
+  bool constMethod() const { return true; }
+  Mutable &operator[](int I) { return *this; }
+  bool operator==(const Mutable &Other) const { return true; }
   ~Mutable() {}
 };
 
@@ -127,14 +121,12 @@ struct Point {
   int x, y;
 };
 
-Mutable& operator<<(Mutable &Out, bool B) {
+Mutable &operator<<(Mutable &Out, bool B) {
   Out.setBool(B);
   return Out;
 }
 
-bool operator!=(const Mutable& M1, const Mutable& M2) {
-  return false;
-}
+bool operator!=(const Mutable &M1, const Mutable &M2) { return false; }
 
 void use(const Mutable &M);
 void use(int I);
@@ -171,7 +163,7 @@ void negativeVarIsMoved() {
 
 void negativeNonConstOperatorIsInvoked() {
   for (auto NonConstOperatorInvokee : View<Iterator<Mutable>>()) {
-    auto& N = NonConstOperatorInvokee[0];
+    auto &N = NonConstOperatorInvokee[0];
   }
 }
 
@@ -188,7 +180,7 @@ void negativeConstCheapToCopy() {
 
 void negativeConstCheapToCopyTypedef() {
   typedef const int ConstInt;
-  for (ConstInt C  : View<Iterator<ConstInt>>()) {
+  for (ConstInt C : View<Iterator<ConstInt>>()) {
   }
 }
 
@@ -233,9 +225,11 @@ void positiveOnlyAccessedFieldAsConst() {
 void positiveOnlyUsedInCopyConstructor() {
   // [CXX-P2004]: "Expensive copy to `A` in every iteration."
   for (auto A : View<Iterator<Mutable>>()) {
-    // [CXX-P2005]: "Variable `Copy`, of an expensive-type, is copy-constructer but never used."
+    // [CXX-P2005]: "Variable `Copy`, of an expensive-type, is copy-constructer
+    // but never used."
     Mutable Copy = A;
-    // [CXX-P2005]: "Variable `Copy2`, of an expensive-type, is copy-constructer but never used."
+    // [CXX-P2005]: "Variable `Copy2`, of an expensive-type, is copy-constructer
+    // but never used."
     Mutable Copy2(A);
   }
 }
@@ -266,8 +260,7 @@ void IgnoreLoopVariableNotUsedInLoopBody() {
   }
 }
 
-template <typename T>
-struct ValueReturningIterator {
+template <typename T> struct ValueReturningIterator {
   void operator++() {}
   T operator*() { return T(); }
   bool operator!=(const ValueReturningIterator &) { return false; }

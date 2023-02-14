@@ -1,7 +1,7 @@
+#include <algorithm>
 #include <set>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 class EmployeeDetails {
 public:
@@ -18,7 +18,7 @@ void add_details(std::vector<std::string> employee_names) {
   std::vector<EmployeeDetails> work_exp;
   // Do work_exp.reserve(employee_names.size());
   // work_exp.reserve(employee_names.size());
-  for (const auto& name : employee_names)
+  for (const auto &name : employee_names)
     work_exp.push_back(EmployeeDetails(name));
 }
 

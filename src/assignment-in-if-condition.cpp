@@ -1,9 +1,8 @@
-//clang_tidy
+// clang_tidy
 void f(int arg) {
   int f = 3;
   // [CXX-W2000]: 8 "Found assignment `f = arg` in `if` condition"
-  if ((f = arg) || (f == (arg + 1)))
-  {
+  if ((f = arg) || (f == (arg + 1))) {
     f = 5;
   }
 }
@@ -11,8 +10,7 @@ void f(int arg) {
 void f1(int arg) {
   int f = 3;
   // [CXX-W2000]: 22 "Found assignment `f = (arg + 1)` in `if` condition"
-  if ((f == arg) || (f = (arg + 1)))
-  {
+  if ((f == arg) || (f = (arg + 1))) {
     f = 5;
   }
 }
@@ -20,8 +18,7 @@ void f1(int arg) {
 void f2(int arg) {
   int f = 3;
   // [CXX-W2000]: 7 "Found assignment `f = arg` in `if` condition"
-  if (f = arg)
-  {
+  if (f = arg) {
     f = 5;
   }
 }
@@ -32,8 +29,7 @@ volatile int v = 32;
 void f3(int arg) {
   int f = 3;
   // [CXX-W2000]: 40 "Found assignment `f = v` in `if` condition"
-  if ((f == arg) || ((arg + 6 < f) && (f = v)))
-  {
+  if ((f == arg) || ((arg + 6 < f) && (f = v))) {
     f = 5;
   }
 }
@@ -41,10 +37,11 @@ void f3(int arg) {
 void f4(int arg) {
   int f = 3;
   // [CXX-W2000]: 41 "Found assignment `f = v` in `if` condition"
-  if ((f == arg) || ((arg + 6 < f) && ((f = v) || (f < 8))))
-  {
+  if ((f == arg) || ((arg + 6 < f) && ((f = v) || (f < 8)))) {
     f = 5;
-  } else if ((arg + 8 < f) && ((f = v) || (f < 8))) // [CXX-W2000]: 33 "Found assignment `f = v` in `if` condition"
+  } else if ((arg + 8 < f) &&
+             ((f = v) || (f < 8))) // [CXX-W2000]: 33 "Found assignment `f = v`
+                                   // in `if` condition"
   {
     f = 6;
   }
@@ -67,13 +64,11 @@ void f5(int arg) {
     f = 6;
   }
   // [CXX-W2000]: 7 "Found assignment `bo = 3` in `if` condition"
-  if (bo = 3)
-  {
+  if (bo = 3) {
     f = 7;
   }
   // [CXX-W2000]: 22 "Found assignment `bo = 6` in `if` condition"
-  if ((arg == 3) || (bo = 6))
-  {
+  if ((arg == 3) || (bo = 6)) {
     f = 8;
   }
   v = f;
