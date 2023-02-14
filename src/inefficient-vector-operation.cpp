@@ -6,47 +6,46 @@ namespace std {
 
 typedef int size_t;
 
-template<class E> class initializer_list {
+template <class E> class initializer_list {
 public:
   using value_type = E;
-  using reference = E&;
-  using const_reference = const E&;
+  using reference = E &;
+  using const_reference = const E &;
   using size_type = size_t;
-  using iterator = const E*;
-  using const_iterator = const E*;
+  using iterator = const E *;
+  using const_iterator = const E *;
   initializer_list();
-  size_t size() const; // number of elements
-  const E* begin() const; // first element
-  const E* end() const; // one past the last element
+  size_t size() const;    // number of elements
+  const E *begin() const; // first element
+  const E *end() const;   // one past the last element
 };
 
 // initializer list range access
-template<class E> const E* begin(initializer_list<E> il);
-template<class E> const E* end(initializer_list<E> il);
+template <class E> const E *begin(initializer_list<E> il);
+template <class E> const E *end(initializer_list<E> il);
 
-template <class T>
-class vector {
- public:
-  typedef T* iterator;
-  typedef const T* const_iterator;
-  typedef T& reference;
-  typedef const T& const_reference;
+template <class T> class vector {
+public:
+  typedef T *iterator;
+  typedef const T *const_iterator;
+  typedef T &reference;
+  typedef const T &const_reference;
   typedef size_t size_type;
 
   explicit vector();
   explicit vector(size_type n);
   vector(std::initializer_list<T> init);
 
-  void push_back(const T& val);
+  void push_back(const T &val);
 
-  template <class... Args> void emplace_back(Args &&... args);
+  template <class... Args> void emplace_back(Args &&...args);
 
   void reserve(size_t n);
   void resize(size_t n);
 
   size_t size() const;
-  const_reference operator[] (size_type) const;
-  reference operator[] (size_type);
+  const_reference operator[](size_type) const;
+  reference operator[](size_type);
 
   const_iterator begin() const;
   const_iterator end() const;
@@ -54,12 +53,12 @@ class vector {
 } // namespace std
 
 class Foo {
- public:
+public:
   explicit Foo(int);
 };
 
 class Bar {
- public:
+public:
   Bar(int);
 };
 
@@ -71,8 +70,8 @@ class Message : public MessageLite {};
 } // namespace proto2
 
 class FooProto : public proto2::Message {
- public:
-  int *add_x();  // repeated int x;
+public:
+  int *add_x(); // repeated int x;
   void add_x(int x);
   void mutable_x();
   void mutable_y();
@@ -80,18 +79,19 @@ class FooProto : public proto2::Message {
 };
 
 class BarProto : public proto2::Message {
- public:
+public:
   int *add_x();
   void add_x(int x);
   void mutable_x();
   void mutable_y();
 };
 
-void f(std::vector<int>& t) {
+void f(std::vector<int> &t) {
   {
     std::vector<int> v0;
     for (int i = 0; i < 10; ++i)
-      // [CXX-P2007]: "Reallocating memory using `push_back`. Consider adding `v0.reserve(10)\;` before the loop."
+      // [CXX-P2007]: "Reallocating memory using `push_back`. Consider adding
+      // `v0.reserve(10)\;` before the loop."
       v0.push_back(i);
   }
   {
@@ -113,7 +113,7 @@ void f(std::vector<int>& t) {
     for (int i = 0; i < 10; ++i)
       // [CXX-P2007]
       v2.push_back(0);
-      // CHECK-MESSAGES: :[[@LINE-1]]:7: warning: 'push_back' is called
+    // CHECK-MESSAGES: :[[@LINE-1]]:7: warning: 'push_back' is called
   }
   {
     std::vector<int> v3;
@@ -137,13 +137,14 @@ void f(std::vector<int>& t) {
     for (int i = 0; i < 10; ++i)
       // [CXX-P2007]
       v4.push_back(i);
-      // CHECK-MESSAGES: :[[@LINE-1]]:7: warning: 'push_back' is called
+    // CHECK-MESSAGES: :[[@LINE-1]]:7: warning: 'push_back' is called
   }
   {
     std::vector<int> v6;
     // CHECK-FIXES: v6.reserve(t.size());
     for (std::size_t i = 0; i < t.size(); ++i) {
-      // [CXX-P2007]: "Reallocating memory using `push_back`. Consider adding `v6.reserve(t.size())\;` before the loop."
+      // [CXX-P2007]: "Reallocating memory using `push_back`. Consider adding
+      // `v6.reserve(t.size())\;` before the loop."
       v6.push_back(t[i]);
       // CHECK-MESSAGES: :[[@LINE-1]]:7: warning: 'push_back' is called
     }
@@ -151,14 +152,16 @@ void f(std::vector<int>& t) {
   {
     std::vector<int> v7;
     for (std::size_t i = 0; i < t.size() - 1; ++i) {
-      // [CXX-P2007]: "Reallocating memory using `push_back`. Consider adding `v7.reserve(t.size() - 1)\;` before the loop."
+      // [CXX-P2007]: "Reallocating memory using `push_back`. Consider adding
+      // `v7.reserve(t.size() - 1)\;` before the loop."
       v7.push_back(t[i]);
     }
   }
   {
     std::vector<int> v8;
     for (const auto &e : t) {
-      // [CXX-P2007]: "Reallocating memory using `push_back`. Consider adding `v8.reserve(t.size())\;` before the loop."
+      // [CXX-P2007]: "Reallocating memory using `push_back`. Consider adding
+      // `v8.reserve(t.size())\;` before the loop."
       v8.push_back(e);
     }
   }
@@ -311,7 +314,7 @@ void f(std::vector<int>& t) {
   }
   {
     std::vector<int> z12;
-    std::vector<int>* z13 = &t;
+    std::vector<int> *z13 = &t;
     // We only support detecting the range init expression which references
     // container directly.
     // Complex range init expressions like `*z13` is not supported.
