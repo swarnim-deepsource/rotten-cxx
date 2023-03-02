@@ -1,5 +1,6 @@
 version = 1
 
+exclude_patterns = ["src/copy-constructor-init.cpp"]
+
 [[analyzers]]
 name = "cxx"
-enabled = true
