@@ -1,3 +1,4 @@
+// scatr-check: CXX-P2007
 // RUN: %check_clang_tidy %s performance-inefficient-vector-operation %t -- \
 // RUN: -format-style=llvm \
 // RUN: -config='{CheckOptions: \

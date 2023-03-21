@@ -1,3 +1,4 @@
+// scatr-check: CXX-W2005
 // RUN: %check_clang_tidy %s bugprone-fold-init-type %t
 
 namespace std {

@@ -1,4 +1,4 @@
-//clang_tidy
+// scatr-check: CXX-W2000
 void f(int arg) {
   int f = 3;
   // [CXX-W2000]: 8 "Found assignment `f = arg` in `if` condition"

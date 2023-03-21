@@ -1,3 +1,4 @@
+// scatr-check: CXX-W2002
 // RUN: %check_clang_tidy %s bugprone-bool-pointer-implicit-conversion %t
 
 bool *SomeFunction();

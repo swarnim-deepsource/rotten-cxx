@@ -1,4 +1,4 @@
-// clang_tidy
+// scatr-check: CXX-W2001
 // Functions expecting a floating-point parameter.
 void floatArg(float x) {}
 void doubleArg(double x) {}

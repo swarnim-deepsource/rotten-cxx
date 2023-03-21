@@ -1,3 +1,4 @@
+// scatr-check: CXX-2004
 // RUN: %check_clang_tidy -std=c++11,c++14 %s bugprone-dangling-handle %t -- \
 // RUN:   -config="{CheckOptions: \
 // RUN:             [{key: bugprone-dangling-handle.HandleClasses, \
@@ -104,6 +105,8 @@ void Positives() {
 }
 
 const char static_array[] = "A";
+
+// [CXX-P2009]: "The `value_arg` parameter is copied on each invocation, consider making it a reference"
 std::string_view ReturnStatements(int i, std::string value_arg,
                                   const std::string &ref_arg) {
   const char array[] = "A";

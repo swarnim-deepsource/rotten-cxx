@@ -1,3 +1,4 @@
+// scatr-check: CXX-2003
 // RUN: %check_clang_tidy %s performance-faster-string-find %t
 // RUN: %check_clang_tidy -check-suffix=CUSTOM %s performance-faster-string-find %t -- \
 // RUN:   -config="{CheckOptions: \

@@ -1,4 +1,4 @@
-// clang_tidy
+// scatr-check: CXX-P2000
 namespace std {
 template <typename T> struct less {
   bool operator()(const T &lhs, const T &rhs) { return lhs < rhs; }

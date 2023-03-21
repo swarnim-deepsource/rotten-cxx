@@ -1,3 +1,4 @@
+// scatr-check: CXX-W2009, CXX-W2011
 // RUN: %check_clang_tidy %s cppcoreguidelines-avoid-non-const-global-variables %t
 
 // [CXX-W2009]: "Non-const variable `nonConstInt` placed in global scope"
@@ -23,11 +24,11 @@ const int constNamespaceInt = 0;
 const int constInt = 0;
 
 // [CXX-W2009]
-const int* pointerToConstInt = &constInt;
+const int *pointerToConstInt = &constInt;
 
-const int* const constPointerToConstInt = &constInt;
+const int *const constPointerToConstInt = &constInt;
 
-const int& constReferenceToConstInt = constInt;
+const int &constReferenceToConstInt = constInt;
 
 constexpr int constexprInt = 0;
 
@@ -44,10 +45,12 @@ int nonConstAnonymousNamespaceInt = 0;
 class DummyClass {
   public:
     int nonConstPublicMemberVariable = 0;
+    // [CXX-W2010]
     const int constPublicMemberVariable = 0;
 
   private:
     int nonConstPrivateMemberVariable = 0;
+    // [CXX-W2010]
     const int constPrivateMemberVariable = 0;
 };
 
@@ -55,16 +58,16 @@ class DummyClass {
 DummyClass nonConstClassInstance;
 
 // [CXX-W2009]; [CXX-W2011]
-DummyClass* pointerToNonConstDummyClass = &nonConstClassInstance;
+DummyClass *pointerToNonConstDummyClass = &nonConstClassInstance;
 
 // [CXX-W2011]
-DummyClass& referenceToNonConstDummyClass = nonConstClassInstance;
+DummyClass &referenceToNonConstDummyClass = nonConstClassInstance;
 
 // [CXX-W2009]; [CXX-W2011]
-int* nonConstPointerToMember = &nonConstClassInstance.nonConstPublicMemberVariable;
+int *nonConstPointerToMember = &nonConstClassInstance.nonConstPublicMemberVariable;
 
 // [CXX-W2011]
-int* const constPointerToNonConstMember = &nonConstClassInstance.nonConstPublicMemberVariable;
+int *const constPointerToNonConstMember = &nonConstClassInstance.nonConstPublicMemberVariable;
 
 const DummyClass constClassInstance;
 
@@ -94,22 +97,22 @@ enum DummyEnum { first, second };
 DummyEnum nonConstDummyEnumInstance = DummyEnum::first;
 
 // [CXX-W2009]; [CXX-W2011]
-DummyEnum* pointerToNonConstDummyEnum = &nonConstDummyEnumInstance;
+DummyEnum *pointerToNonConstDummyEnum = &nonConstDummyEnumInstance;
 
 // [CXX-W2011]
-DummyEnum& referenceToNonConstDummyEnum = nonConstDummyEnumInstance;
+DummyEnum &referenceToNonConstDummyEnum = nonConstDummyEnumInstance;
 
 // [CXX-W2011]
-DummyEnum* const constPointerToNonConstDummyEnum = &nonConstDummyEnumInstance;
+DummyEnum *const constPointerToNonConstDummyEnum = &nonConstDummyEnumInstance;
 
 const DummyEnum constDummyEnumInstance = DummyEnum::first;
 
 // [CXX-W2009]
-const DummyEnum* nonConstPointerToConstDummyEnum = &constDummyEnumInstance;
+const DummyEnum *nonConstPointerToConstDummyEnum = &constDummyEnumInstance;
 
-const DummyEnum* const constPointerToConstDummyEnum = &constDummyEnumInstance;
+const DummyEnum *const constPointerToConstDummyEnum = &constDummyEnumInstance;
 
-const DummyEnum& referenceToConstDummyEnum = constDummyEnumInstance;
+const DummyEnum &referenceToConstDummyEnum = constDummyEnumInstance;
 
 namespace namespace_name {
 // [CXX-W2009]
@@ -121,39 +124,39 @@ const DummyEnum constNamespaceEnumInstance = DummyEnum::first;
 namespace {
 // [CXX-W2009]
 DummyEnum nonConstAnonymousNamespaceEnumInstance = DummyEnum::first;
-} // namespace
+}
 
 // CHECKING FOR NON-CONST GLOBAL STRUCT ///////////////////////////////////////
 struct DummyStruct {
-  public:
-    int structIntElement = 0;
-    const int constStructIntElement = 0;
+public:
+  int structIntElement = 0;
+  // [CXX-W2010]
+  const int constStructIntElement = 0;
 
-  private:
-    int privateStructIntElement = 0;
+private:
+  int privateStructIntElement = 0;
 };
 
 // [CXX-W2009]
 DummyStruct nonConstDummyStructInstance;
 
-// [CXX-W2009]
-// [CXX-W2011]
-DummyStruct* pointerToNonConstDummyStruct = &nonConstDummyStructInstance;
+// [CXX-W2009]; [CXX-W2011]
+DummyStruct *pointerToNonConstDummyStruct = &nonConstDummyStructInstance;
 
 // [CXX-W2011]
-DummyStruct& referenceToNonConstDummyStruct = nonConstDummyStructInstance;
+DummyStruct &referenceToNonConstDummyStruct = nonConstDummyStructInstance;
 
 // [CXX-W2011]
-DummyStruct* const constPointerToNonConstDummyStruct = &nonConstDummyStructInstance;
+DummyStruct *const constPointerToNonConstDummyStruct = &nonConstDummyStructInstance;
 
 const DummyStruct constDummyStructInstance;
 
 // [CXX-W2009]
-const DummyStruct* nonConstPointerToConstDummyStruct = &constDummyStructInstance;
+const DummyStruct *nonConstPointerToConstDummyStruct = &constDummyStructInstance;
 
-const DummyStruct* const constPointerToConstDummyStruct = &constDummyStructInstance;
+const DummyStruct *const constPointerToConstDummyStruct = &constDummyStructInstance;
 
-const DummyStruct& referenceToConstDummyStruct = constDummyStructInstance;
+const DummyStruct &referenceToConstDummyStruct = constDummyStructInstance;
 
 namespace namespace_name {
 // [CXX-W2009]
@@ -204,10 +207,12 @@ const DummyUnion constNamespaceDummyUnionInstance = {0x0};
 namespace {
 // [CXX-W2009]
 DummyUnion nonConstAnonymousNamespaceUnionInstance = {0x0};
-} // namespace
+}
 
 // CHECKING FOR NON-CONST GLOBAL FUNCTION POINTER /////////////////////////////
-int dummyFunction() { return 0; }
+int dummyFunction() {
+  return 0;
+}
 
 typedef int (*functionPointer)();
 // [CXX-W2009]
@@ -218,7 +223,8 @@ typedef int (*const functionConstPointer)();
 functionPointer fp2 = &dummyFunction;
 
 // CHECKING FOR NON-CONST GLOBAL TEMPLATE VARIABLE ////////////////////////////
-template <class T> constexpr T templateVariable = T(0L);
+template <class T>
+constexpr T templateVariable = T(0L);
 
 // CHECKING AGAINST FALSE POSITIVES INSIDE FUNCTION SCOPE /////////////////////
 int main() {
@@ -228,3 +234,7 @@ int main() {
         nonConstInt = nonConstLoopVariable + i + staticNonConstLoopVariable;
     }
 }
+
+bar matchesAnyListedName(s::bar < bar > foo) {
+  return 0;
+};

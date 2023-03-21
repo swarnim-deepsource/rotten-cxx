@@ -1,3 +1,4 @@
+// scatr-check: CXX-W2006
 // RUN: %check_clang_tidy %s bugprone-infinite-loop %t \
 // RUN:                   -- -- -fexceptions -fblocks -fno-delayed-template-parsing
 
@@ -568,6 +569,7 @@ int foo(void) {
 }
 
 struct AggregateWithReference {
+  // [CXX-W2012]: "Member `AggregateWithReference::y` is a reference"
   int &y;
 };
 

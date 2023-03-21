@@ -1,3 +1,4 @@
+// scatr-check: CXX-W2008
 // RUN: %check_clang_tidy %s bugprone-parent-virtual-call %t
 
 extern int foo();

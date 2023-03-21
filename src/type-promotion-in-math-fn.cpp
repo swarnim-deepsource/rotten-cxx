@@ -1,3 +1,4 @@
+// scatr-check: CXX-P2001
 // RUN: %check_clang_tidy %s performance-type-promotion-in-math-fn %t
 
 double acos(double);

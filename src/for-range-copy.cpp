@@ -1,3 +1,4 @@
+// scatr-check: CXX-2004
 // RUN: %check_clang_tidy %s performance-for-range-copy %t -- -- -fno-delayed-template-parsing
 
 namespace std {
@@ -280,6 +281,7 @@ void negativeValueIterator() {
   }
 }
 
+// [CXX-P2009]
 View<Iterator<S>> createView(S) { return View<Iterator<S>>(); }
 
 void positiveValueIteratorUsedElseWhere() {

@@ -3,7 +3,7 @@
 struct Obj {
   Obj();
   Obj(const Obj &);
-  Obj(Obj &&);
+  Obj(Obj &&) noexcept;
   virtual ~Obj();
 };
 

@@ -1,3 +1,4 @@
+// scatr-check: CXX-W2007
 // RUN: %check_clang_tidy %s bugprone-inaccurate-erase %t
 
 namespace std {

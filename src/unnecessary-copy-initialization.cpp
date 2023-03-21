@@ -1,3 +1,4 @@
+// scatr-check: CXX-W2009
 // RUN: %check_clang_tidy -std=c++17 %s performance-unnecessary-copy-initialization %t
 
 template <typename T>
@@ -120,6 +121,7 @@ void PositiveMethodCallConstReferenceParam(const ExpensiveToCopyType &Obj) {
   VarCopyConstructed.constMethod();
 }
 
+// [CXX-P2009]: "The const qualified `Obj` parameter is copied on each invocation, consider making it a const reference"
 void PositiveMethodCallConstParam(const ExpensiveToCopyType Obj) {
   // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is copy-constructer but only used as const."
   const auto AutoAssigned = Obj.reference();
@@ -366,6 +368,7 @@ void NegativeMethodCallNonConstRefIsModified(ExpensiveToCopyType &Obj) {
   mutate(&Obj);
 }
 
+// [CXX-P2009]
 void PositiveMethodCallNonConstNotModified(ExpensiveToCopyType Obj) {
     // [CXX-P2005]: "Variable `AutoAssigned`, of an expensive-type, is copy-constructer but only used as const."
   const auto AutoAssigned = Obj.reference();
@@ -633,6 +636,7 @@ struct function {
 };
 } // namespace std
 
+// [CXX-P2009]
 void positiveFakeStdFunction(std::function<void(int)> F) {
   // [CXX-P2005]: "Variable `Copy`, of an expensive-type, is copy-constructer but only used as const."
   auto Copy = F;
@@ -644,7 +648,9 @@ void positiveFakeStdFunction(std::function<void(int)> F) {
 } // namespace fake
 
 void positiveInvokedOnStdFunction(
+    // [CXX-P2009]
     std::function<void(const ExpensiveToCopyType &)> Update,
+    // [CXX-P2009]
     const ExpensiveToCopyType Orig) {
   // [CXX-P2005]: "Variable `Copy`, of an expensive-type, is copy-constructer but only used as const."
   auto Copy = Orig.reference();
@@ -654,7 +660,9 @@ void positiveInvokedOnStdFunction(
 }
 
 void negativeInvokedOnStdFunction(
+    // [CXX-P2009]
     std::function<void(ExpensiveToCopyType &)> Update,
+    // [CXX-P2009]
     const ExpensiveToCopyType Orig) {
   auto Copy = Orig.reference();
   Update(Copy);
