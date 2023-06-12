@@ -4,3 +4,6 @@ exclude_patterns = ["src/copy-constructor-init.cpp"]
 
 [[analyzers]]
 name = "cxx"
+
+  [analyzers.meta]
+  misra_compliance = true
