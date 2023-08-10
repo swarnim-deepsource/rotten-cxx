@@ -7,4 +7,3 @@ name = "cxx"
 
   [analyzers.meta]
   misra_compliance = true
-  cpp_version = "c++11"
