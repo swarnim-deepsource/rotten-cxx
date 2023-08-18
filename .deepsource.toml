@@ -1,10 +1,6 @@
 version = 1
 
-exclude_patterns = ["src/copy-constructor-init.cpp"]
+exclude_patterns = ["giga/**"]
 
 [[analyzers]]
 name = "cxx"
-
-  [analyzers.meta]
-  misra_compliance = true
-  cpp_version = "c++17"
